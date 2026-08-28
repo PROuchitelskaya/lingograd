@@ -25,7 +25,15 @@ from content import GRADES, bank_stats
 from game import GameSession, make_code
 
 FRONTEND = BASE.parent / "frontend"
-PORT = 4190
+
+# На школьном ноутбуке сервер слушает всю сеть, чтобы телефоны видели его по Wi-Fi.
+# На хостинге он прячется за nginx, а адрес для QR-кода задаётся явно —
+# иначе в код попал бы внутренний IP машины, недоступный ученикам.
+import os
+
+HOST = os.environ.get("LINGOGRAD_HOST", "0.0.0.0")
+PORT = int(os.environ.get("LINGOGRAD_PORT", "4190"))
+PUBLIC_URL = os.environ.get("LINGOGRAD_PUBLIC_URL", "").rstrip("/")
 
 app = FastAPI(title="Лингоград", docs_url=None, redoc_url=None)
 
@@ -117,6 +125,11 @@ class Hub:
 hub = Hub()
 
 
+def base_url() -> str:
+    """Адрес, по которому ученики откроют игру: домен на хостинге или IP в классе."""
+    return PUBLIC_URL or f"http://{lan_ip()}:{PORT}"
+
+
 def lan_ip() -> str:
     """IP в локальной сети — для QR-кода на экране учителя."""
     try:
@@ -155,7 +168,7 @@ async def create_session(body: dict):
         "duration": duration,
         "mode": mode,
         "total_questions": s.total_questions,
-        "join_url": f"http://{lan_ip()}:{PORT}/?c={s.code}",
+        "join_url": f"{base_url()}/?c={s.code}",
         "lan_ip": lan_ip(),
         "port": PORT,
     }
@@ -311,4 +324,4 @@ if __name__ == "__main__":
     print(f"  Локально: http://127.0.0.1:{PORT}/\n")
     # access-логи выключены намеренно: в них попадали бы IP-адреса устройств,
     # а игра не должна накапливать ничего, что связывает ответы с человеком
-    uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="warning", access_log=False)
+    uvicorn.run(app, host=HOST, port=PORT, log_level="warning", access_log=False)
