@@ -12,8 +12,8 @@
   --violet:#7357C8;
 
   /* Производные */
-  --ink-70:rgba(32,36,58,.70);
-  --ink-55:rgba(32,36,58,.72);   /* 5.4:1 на бумажном фоне — WCAG AA */
+  --ink-70:rgba(32,36,58,.78);   /* основной приглушённый текст, 6.4:1 */
+  --ink-55:rgba(32,36,58,.72);   /* вспомогательный, 5.4:1 — оба выше AA */
   --ink-35:rgba(32,36,58,.35);
   --ink-12:rgba(32,36,58,.12);
   --ink-06:rgba(32,36,58,.06);
@@ -51,9 +51,11 @@
   --ease:cubic-bezier(.22,.8,.32,1);
 }
 
-/* Цвета районов (ТЗ §22–26) */
-.zone-words   { --z1:var(--blue);   --z2:var(--yellow); --z-bg:#FFF6E6; --z-ink:var(--ink); }
-.zone-morph   { --z1:var(--violet); --z2:var(--blue);   --z-bg:#EAF2FF; --z-ink:var(--ink); }
-.zone-syntax  { --z1:var(--orange); --z2:var(--yellow); --z-bg:#FFF0DC; --z-ink:var(--ink); }
-.zone-text    { --z1:#2A3576;       --z2:var(--yellow); --z-bg:#1E2550; --z-ink:#FFF8ED; }
-.zone-chaos   { --z1:var(--violet); --z2:var(--red);    --z-bg:#191E4A; --z-ink:#FFF8ED; }
+/* Цвета районов (ТЗ §22–26).
+   --z1/--z2 — заливки и акценты, --z-label — тот же акцент, но пригодный
+   для текста на фоне района: у тёмных районов светлый, у светлых тёмный. */
+.zone-words   { --z1:var(--blue);   --z2:var(--yellow); --z-bg:#FFF6E6; --z-ink:var(--ink);  --z-label:#24326E; }
+.zone-morph   { --z1:var(--violet); --z2:var(--blue);   --z-bg:#EAF2FF; --z-ink:var(--ink);  --z-label:#4B3496; }
+.zone-syntax  { --z1:var(--orange); --z2:var(--yellow); --z-bg:#FFF0DC; --z-ink:var(--ink);  --z-label:#8A4A0F; }
+.zone-text    { --z1:#2A3576;       --z2:var(--yellow); --z-bg:#1E2550; --z-ink:#FFF8ED;     --z-label:#FFD979; }
+.zone-chaos   { --z1:var(--violet); --z2:var(--red);    --z-bg:#191E4A; --z-ink:#FFF8ED;     --z-label:#FFD979; }

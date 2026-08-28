@@ -7,7 +7,7 @@ import * as net from './net.js';
 import { sfx, unlock, startMusic } from './audio.js';
 import * as fx from './fx.js';
 import { toSVG } from './qr.js';
-import { chaosVillain, chaosTower, crystal } from './art.js';
+import { chaosVillain, chaosTower } from './art.js';
 import { settingsButton } from './settings.js';
 
 const root = document.getElementById('app');
@@ -209,7 +209,7 @@ function renderConnect() {
         h('h1', { class: 'display' }, 'ПОДКЛЮЧАЙТЕСЬ'),
         h('div', { class: 'qr', html: toSVG(joinUrl, { size: 300 }) }),
         h('div', { class: 'connect__code' },
-          h('span', { class: 'connect__code-label' }, 'CODE:'),
+          h('span', { class: 'connect__code-label' }, 'КОД:'),
           h('span', { class: 'connect__code-value' }, state.code)),
         h('p', { class: 'muted' }, 'Откройте игру на телефоне и введите код'),
         h('p', { class: 'connect__url' }, joinUrl)),
@@ -340,11 +340,11 @@ function renderLive() {
             class: 'btn btn--ctrl', type: 'button',
             onClick: () => { net.send({ t: 'teacher', action: 'add_time', value: 300 });
                              toast('+5 минут к уроку'); },
-          }, '＋5 МИН'),
+          }, '+5 МИН'),
           state.phase === 'question' ? h('button', {
             class: 'btn btn--ctrl', type: 'button',
             onClick: () => net.send({ t: 'teacher', action: 'extend_question', value: 15 }),
-          }, '＋15 С К ЗАДАНИЮ') : null,
+          }, '+15 С К ЗАДАНИЮ') : null,
           h('button', {
             class: 'btn btn--ctrl btn--danger', type: 'button',
             onClick: () => { if (confirm('Завершить игру и показать результаты?'))
@@ -424,7 +424,7 @@ async function loadAnalytics() {
           h('div', { class: 'anal__sub' }, `${d.correct} из ${d.answered} ответов`)))),
       h('div', { class: 'side__title' }, 'ТРУДНЫЕ ЗАДАНИЯ'),
       h('div', { class: 'anal__list' },
-        (data.hardest || []).map((q) => h('div', { class: 'anal__row' },
+        (data.hardest || []).map((q) => h('div', { class: 'anal__row', title: q.question },
           h('span', { class: 'anal__pct' }, `${Math.round(q.accuracy * 100)}%`),
           h('span', { class: 'anal__q' }, q.question),
           h('span', { class: 'anal__topic' }, q.topic)))),

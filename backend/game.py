@@ -136,6 +136,7 @@ class GameSession:
         self.question_index = 0
         self.global_index = 0
         self.deadline = 0
+        self.phase_started = 0
         self.paused = False
         self.pause_started = 0
         self.started_at = 0
@@ -149,6 +150,8 @@ class GameSession:
         self.current_order: dict | None = None
         self.answers: dict[str, dict] = {}     # player_id -> {attempts, done, correct}
         self.answers_history: dict[str, dict] = {}  # qid -> ответы (для «назад»)
+        self.views: dict[str, dict] = {}       # qid -> вид задания: порядок вариантов
+        self.scored_tower: set[str] = set()    # задания финала, уже отнявшие energy
         self.last_reveal: dict | None = None
         self.mission_report: dict | None = None
 
@@ -220,6 +223,7 @@ class GameSession:
         self.phase = phase
         if seconds is None:
             seconds = PHASE_TIME.get(phase, 10)
+        self.phase_started = now_ms()
         self.deadline = now_ms() + int(seconds * 1000)
         if self.paused:
             # фаза создана уже во время паузы (учитель нажал «пропустить»),
@@ -319,7 +323,12 @@ class GameSession:
 
     async def ask_question(self) -> None:
         q = self.mission["questions"][self.question_index]
-        built = make_view(q, self.rng)
+        # перемешиваем один раз за игру: иначе после «предыдущего задания»
+        # сказанное учителем «правильный был вариант В» перестанет быть правдой
+        built = self.views.get(q["id"])
+        if built is None:
+            built = make_view(q, self.rng)
+            self.views[q["id"]] = built
         self.current_q = q
         self.current_view = built["view"]
         self.current_order = built["order"]
@@ -349,11 +358,12 @@ class GameSession:
         correct = sum(s["correct"] for s in stats.values())
         share = correct / answered if answered else 0.0
 
-        if self.mission["district"] == "tower":
+        if self.mission["district"] == "tower" and q["id"] not in self.scored_tower:
+            self.scored_tower.add(q["id"])   # повтор задания не бьёт по башне второй раз
             step = 100.0 / max(1, len(self.mission["questions"]))
             # даже при слабом ответе башня теряет часть энергии — игра обязана закончиться
             self.chaos_hp = max(0.0, self.chaos_hp - step * (0.45 + 0.55 * share))
-            if self.question_index + 1 >= len(self.mission["questions"]):
+            if len(self.scored_tower) >= len(self.mission["questions"]):
                 self.chaos_hp = 0.0
 
         row = {
@@ -601,6 +611,7 @@ class GameSession:
             "paused": self.paused,
             "now": now_ms(),
             "phase_deadline": self.deadline,
+            "phase_started": self.phase_started,
             "session_left": self.session_left_ms(),
             "duration_min": self.duration_min,
             "time_over": self.time_over,

@@ -1,6 +1,6 @@
 // Настройки звука (ТЗ §34): 🔊 Звук ON/OFF, 🎵 Музыка ON/OFF.
 
-import { h, mount } from './ui.js';
+import { h } from './ui.js';
 import { settings, setSfx, setMusic, startMusic, unlock, sfx } from './audio.js';
 
 function toggleRow(label, get, set) {

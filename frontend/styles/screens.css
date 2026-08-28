@@ -49,6 +49,7 @@
 
 .logo__sub {
   margin: 0;
+  text-indent: .34em;   /* компенсируем «хвост» letter-spacing справа */
   font-size: clamp(15px, 3.4vw, 24px);
   font-weight: 800;
   letter-spacing: .34em;
@@ -128,6 +129,7 @@
 
 .mini__row { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; font-size: 15px; }
 .mini__row.is-me { font-weight: 800; color: var(--blue); }
+.zone-chaos .mini__row.is-me, .zone-text .mini__row.is-me { color: #FFD979; }
 .mini__name { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mini__score { font-variant-numeric: tabular-nums; font-weight: 800; }
 
@@ -166,7 +168,7 @@
 }
 
 .story__text { max-width: 620px; width: 100%; }
-.story__name { font-size: 13px; font-weight: 800; letter-spacing: .24em; color: var(--violet); text-align: center; margin-bottom: 10px; }
+.story__name { font-size: 13px; font-weight: 800; letter-spacing: .24em; color: #5B41A8; text-align: center; margin-bottom: 10px; }
 .story__lines { display: flex; flex-direction: column; gap: 10px; }
 
 .story__line {
@@ -203,6 +205,7 @@
 
 .mapnode {
   position: absolute;
+  max-width: calc(100% - 24px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -216,19 +219,22 @@
   transition: transform .3s var(--ease), filter .3s;
 }
 
-.mapnode--0 { left: 6%;  top: 16%; }
-.mapnode--1 { left: 30%; top: 54%; }
-.mapnode--2 { left: 52%; top: 18%; }
-.mapnode--3 { left: 72%; top: 58%; }
-.mapnode--4 { left: 84%; top: 12%; }
+.mapnode { width: clamp(118px, 15vw, 152px); }
+.mapnode--0 { left: 3%;  top: 14%; }
+.mapnode--1 { left: 26%; top: 56%; }
+.mapnode--2 { left: 48%; top: 12%; }
+/* два последних узла кладём от правого края: при фиксированном left
+   они уезжали за границу карты на планшетных ширинах */
+.mapnode--3 { right: 26%; top: 58%; }
+.mapnode--4 { right: 2%;  top: 14%; }
 
 .mapnode__icon { font-size: 30px; }
 .mapnode__title { font-size: 13px; font-weight: 800; line-height: 1.15; }
 .mapnode__state { font-size: 11px; font-weight: 700; color: var(--ink-55); text-transform: uppercase; letter-spacing: .04em; }
 
 .mapnode--locked { filter: grayscale(1); opacity: .5; }
-.mapnode--done { border: 2px solid var(--green); }
-.mapnode--done .mapnode__state { color: var(--green); }
+.mapnode--done { border: 2px solid var(--green-ink); }
+.mapnode--done .mapnode__state { color: var(--green-ink); }
 
 .mapnode--active {
   border: 3px solid var(--orange);
@@ -264,14 +270,19 @@
 }
 
 .intro__icon { font-size: 66px; }
-.intro__label { font-size: 13px; font-weight: 800; letter-spacing: .18em; color: var(--z1, var(--blue)); }
+.intro__label { font-size: 13px; font-weight: 800; letter-spacing: .18em; color: var(--z-label, var(--blue)); }
 .intro__meta { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
 
+/* Тёмные правила действуют только внутри заставки миссии: у экрана
+   «район восстановлен» тот же класс зоны, но фон остаётся бумажным —
+   раньше название миссии там становилось белым по белому. */
 .zone-text .intro, .zone-chaos .intro { background: var(--z-bg); color: var(--z-ink); }
-.zone-text .muted, .zone-chaos .muted { color: rgba(255,248,237,.72); }
-.zone-text .chip, .zone-chaos .chip { background: rgba(255,255,255,.16); color: #FFF8ED; }
-.zone-text .display, .zone-chaos .display { background: var(--grad-autumn); -webkit-background-clip: text; background-clip: text; }
-.zone-text .lead, .zone-chaos .lead { color: #FFF8ED; }
+.zone-text .intro .muted, .zone-chaos .intro .muted { color: rgba(255,248,237,.78); }
+.zone-text .intro .chip, .zone-chaos .intro .chip { background: rgba(255,255,255,.22); color: #FFF8ED; }
+.zone-text .intro .display, .zone-chaos .intro .display {
+  background: var(--grad-autumn); -webkit-background-clip: text; background-clip: text;
+}
+.zone-text .intro .lead, .zone-chaos .intro .lead { color: #FFF8ED; }
 
 /* Панель учителя всегда на светлом фоне, поэтому «тёмные» правила зон
    (они рассчитаны на экран ученика в Архиве и Башне) к ней применяться
@@ -441,8 +452,7 @@
 
 .q-card.is-correct .answer.is-picked .keeper__mouth { d: path('M18 29 q6 6 12 0'); }
 
-.answer__icon { font-size: 24px; }
-.answer__text { flex: 1; }
+.answer__text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 
 .answer.is-picked {
   border-color: var(--blue);
@@ -476,7 +486,7 @@
 
 .sortable__row {
   display: grid;
-  grid-template-columns: 34px 1fr auto;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   min-height: 60px;
@@ -487,15 +497,17 @@
 }
 
 .sortable__num { width: 30px; height: 30px; border-radius: 50%; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; font-weight: 800; font-size: 14px; }
-.sortable__text { font-weight: 600; font-size: 16px; }
+.sortable__text { font-weight: 600; font-size: 16px; min-width: 0; overflow-wrap: anywhere; }
 .sortable__ctrl { display: flex; gap: 6px; }
 
 /* соединение пар */
 
-.match { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.match { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .match__col { display: flex; flex-direction: column; gap: 10px; }
 
 .match__item {
+  min-width: 0;
+  overflow-wrap: anywhere;
   min-height: 62px;
   padding: 12px 14px;
   border-radius: var(--r-md);
@@ -512,7 +524,16 @@
 }
 
 .match__item.is-active { border-color: var(--blue); transform: scale(1.02); box-shadow: var(--sh-glow); }
-.match__dot { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 auto; }
+.match__dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 800;
+}
 
 /* ввод текста */
 
@@ -547,7 +568,7 @@
 .punct__word { padding: 4px 2px; }
 
 .punct__gap {
-  width: 28px;
+  width: 34px;
   min-height: 48px;
   border: none;
   border-radius: 8px;
@@ -761,11 +782,19 @@
 .victory__bell { width: min(160px, 42vw); animation: swing 1.6s var(--ease) infinite; transform-origin: 50% 8%; }
 .victory__title { font-size: clamp(16px, 3vw, 22px); font-weight: 800; letter-spacing: .2em; color: var(--orange-ink); }
 
-.victory__letters { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+.victory__letters {
+  display: flex;
+  gap: clamp(2px, 1vw, 6px);
+  flex-wrap: nowrap;
+  justify-content: center;
+  margin-top: 8px;
+  max-width: 100%;
+}
 
 .victory__letter {
-  width: clamp(34px, 8vw, 54px);
-  height: clamp(44px, 10vw, 68px);
+  width: clamp(26px, 8.4vw, 54px);
+  height: clamp(36px, 10.5vw, 68px);
+  flex: 0 1 auto;
   border-radius: var(--r-sm);
   background: var(--grad-fest);
   color: var(--white);
@@ -810,7 +839,8 @@
 .results__emoji { font-size: 24px; }
 .results__name { font-size: 18px; font-weight: 800; }
 .results__score { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--blue); }
-.results__acc { font-size: 14px; color: var(--ink-55); }
+.results__acc { font-size: 14px; color: var(--ink-70); }
+.results__row.is-winner .results__acc { color: #6E3B04; }
 
 .results__row.is-winner {
   background: var(--grad-autumn);
@@ -879,6 +909,7 @@
   font-size: clamp(34px, 6vw, 60px);
   font-weight: 800;
   letter-spacing: .16em;
+  text-indent: .16em;
   background: var(--grad-fest);
   -webkit-background-clip: text;
   background-clip: text;
@@ -896,7 +927,9 @@
 
 .tboard__row {
   display: grid;
-  grid-template-columns: 26px minmax(70px, 110px) 1fr 52px 34px;
+  /* полосе нужен гарантированный минимум, иначе на проекторе от неё
+     остаётся 14 px и сравнить команды невозможно */
+  grid-template-columns: 26px minmax(64px, max-content) minmax(90px, 1fr) 52px 34px;
   gap: 10px;
   align-items: center;
   background: var(--white);
@@ -1006,7 +1039,7 @@
 
 .anal__row {
   display: grid;
-  grid-template-columns: 48px 1fr auto;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   font-size: 14px;
@@ -1017,7 +1050,7 @@
 
 .anal__pct { font-weight: 800; color: var(--orange-ink); }
 .anal__q { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.anal__topic { font-size: 12px; color: var(--ink-55); }
+.anal__topic { font-size: 12px; color: var(--ink-55); max-width: 108px; text-align: right; }
 
 /* ---------------------------------------------------------- адаптивность */
 
@@ -1029,7 +1062,11 @@
 }
 
 @media (max-width: 767px) {
-  .answers--grid { grid-template-columns: 1fr; }
+  .livebar { grid-template-columns: 1fr; gap: 4px; text-align: center; }
+  .livebar__clock { font-size: 24px; }
+  .connect { gap: 18px; }
+  .anal__topic { display: none; }
+  .answers--grid, .answers--duo { grid-template-columns: 1fr; }
   .answer { min-height: 56px; font-size: 16px; }
   .teacherq__answers { grid-template-columns: 1fr; }
   .match { grid-template-columns: 1fr 1fr; gap: 8px; }

@@ -6,7 +6,9 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  overflow-x: hidden;               /* ни один экран не скроллится вбок (ТЗ §51) */
+  /* clip, а не hidden: hidden делает body скролл-контейнером,
+     и тогда position: sticky у HUD и боковой панели учителя не работает */
+  overflow-x: clip;
 }
 
 body {
@@ -212,12 +214,12 @@ button, input { font: inherit; color: inherit; }
 }
 
 .btn--ctrl:hover { border-color: var(--blue); color: var(--blue); }
-.btn--danger:hover { border-color: var(--red); color: var(--red); }
+.btn--danger:hover { border-color: #C0392B; color: #C0392B; }
 
 .iconbtn {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: var(--r-sm);
   border: 2px solid var(--ink-12);
   background: var(--white);
   font-size: 18px;
@@ -331,8 +333,8 @@ button, input { font: inherit; color: inherit; }
   font-variant-numeric: tabular-nums;
 }
 
-.hud__timer.is-warn { color: var(--orange); }
-.hud__timer.is-danger { color: var(--red); animation: pulse 1s infinite; }
+.hud__timer.is-warn { color: var(--orange-ink); }
+.hud__timer.is-danger { color: #C0392B; animation: pulse 1s infinite; }
 
 @keyframes pulse { 50% { opacity: .55; } }
 
@@ -380,7 +382,8 @@ button, input { font: inherit; color: inherit; }
   margin: 0 6px 6px 0;
 }
 
-.pill.is-off { background: var(--ink-06); color: var(--ink-35); }
+.pill.is-off { background: var(--ink-06); color: var(--ink-70); }
+.pill.is-off::before { content: '○ '; }   /* не только цветом (ТЗ §46) */
 
 /* эффекты */
 
@@ -408,8 +411,9 @@ button, input { font: inherit; color: inherit; }
 
 /* тосты и баннер связи */
 
-.toasts { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 90;
-          display: flex; flex-direction: column; gap: 8px; width: min(440px, calc(100vw - 32px)); }
+.toasts { position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%); z-index: 90;
+          display: flex; flex-direction: column; gap: 8px;
+          width: min(440px, calc(100vw - 120px)); pointer-events: none; }
 
 .toast {
   background: var(--ink);
@@ -430,12 +434,12 @@ button, input { font: inherit; color: inherit; }
 
 .netbanner {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  bottom: 0; left: 0; right: 0;     /* сверху он закрывал счёт и таймер */
   z-index: 95;
-  background: var(--orange);
+  background: #8A4A0F;               /* белый по оранжевому давал 2.45:1 */
   color: var(--white);
   text-align: center;
-  padding: 8px 14px;
+  padding: 10px 14px;
   font-size: 14px;
   font-weight: 700;
 }
@@ -486,7 +490,7 @@ button, input { font: inherit; color: inherit; }
   transition: background .22s;
 }
 
-.switch.is-on { background: var(--green); color: var(--white); justify-content: flex-start; }
+.switch.is-on { background: var(--green-ink); color: var(--white); justify-content: flex-start; }
 
 .switch__knob {
   position: absolute;

@@ -2,7 +2,7 @@
 // На каждом экране одна очевидная главная кнопка (ТЗ §50).
 
 import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
-         readLocal, saveLocal, players, crystals, animateNumber } from './ui.js';
+         readLocal, saveLocal, players, crystals, plural, animateNumber } from './ui.js';
 import * as net from './net.js';
 import { sfx, setMood, startMusic, unlock } from './audio.js';
 import * as fx from './fx.js';
@@ -232,8 +232,10 @@ function updateTimers() {
   }
   const phaseBar = document.getElementById('phase-bar');
   if (phaseBar) {
+    // считаем по фактической длительности фазы, а не по захардкоженным 12 секундам
     const left = Math.max(0, state.phase_deadline - net.serverNow());
-    phaseBar.style.width = `${Math.max(0, Math.min(100, 100 - left / 120))}%`;
+    const total = Math.max(1, state.phase_deadline - (state.phase_started || (state.phase_deadline - left)));
+    phaseBar.style.width = `${Math.max(0, Math.min(100, (1 - left / total) * 100))}%`;
   }
 }
 
@@ -458,12 +460,14 @@ function renderQuestion() {
         h('span', { class: 'chaosbar__fill', id: 'chaos-hp',
                     style: { width: `${state.chaos_hp}%` } }))) : null,
 
-    isTower ? h('div', { class: 'tower__art', html: chaosTower(state.chaos_hp) }) : null,
     m.district === 'syntax'
       ? h('div', { class: 'bridge__art', html: bridge(state.question_no - 1, m.questions) })
       : null,
 
     activeQuestion.node,
+
+    // башня стоит ПОД заданием: сверху она уводила сам вопрос за первый экран
+    isTower ? h('div', { class: 'tower__art', html: chaosTower(state.chaos_hp) }) : null,
     h('div', { class: 'mini mini--floating', id: 'mini-board' }, miniBoardRows()),
   );
 
@@ -522,7 +526,8 @@ function renderMissionComplete() {
       h('h1', { class: 'display' }, 'РАЙОН ВОССТАНОВЛЕН'),
       h('p', { class: 'lead' }, rep.title || ''),
       h('div', { class: 'done__progress' },
-        `${rep.restored || 1} из ${rep.of || 5} районов Лингограда снова светятся`),
+        `${rep.restored || 1} из ${rep.of || 5} ${plural(rep.restored || 1, 'района', 'районов', 'районов')} ` +
+        `Лингограда снова ${(rep.restored || 1) === 1 ? 'светится' : 'светятся'}`),
       h('div', { class: 'board' },
         (rep.teams || []).map((t, i) => h('div', { class: 'board__row' },
           h('span', { class: 'board__place' }, i + 1),

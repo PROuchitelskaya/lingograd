@@ -166,7 +166,8 @@ export function buildQuestion(q, { onSubmit }) {
             redraw();
           },
         },
-          linked ? h('span', { class: 'match__dot', style: { background: COLORS[i % COLORS.length] } }) : null,
+          linked ? h('span', { class: 'match__dot', style: { background: COLORS[i % COLORS.length] } },
+                     String(i + 1)) : null,
           text);
       }));
 
@@ -185,7 +186,8 @@ export function buildQuestion(q, { onSubmit }) {
             redraw();
           },
         },
-          owner !== undefined ? h('span', { class: 'match__dot', style: { background: COLORS[owner % COLORS.length] } }) : null,
+          owner !== undefined ? h('span', { class: 'match__dot', style: { background: COLORS[owner % COLORS.length] } },
+                                  String(Number(owner) + 1)) : null,
           text);
       }));
 
@@ -239,7 +241,7 @@ export function buildQuestion(q, { onSubmit }) {
         }
         return parts;
       }));
-      setPayload([...commas].sort((a, b) => a - b), { allowEmpty: true });
+      setPayload([...commas].sort((a, b) => a - b));
     };
 
     mount(body,
