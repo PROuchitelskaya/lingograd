@@ -847,8 +847,27 @@
 
 .screen--connect { justify-content: center; }
 
-.connect { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 28px; width: 100%; align-items: start; }
+.connect {
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) 1fr;
+  gap: 28px;
+  width: 100%;
+  align-items: start;
+}
+
+/* min-width: 0 обязателен: иначе колонка грида не сжимается по содержимому
+   и широкий заголовок выезжает на соседнюю колонку */
+.connect__left, .connect__right { min-width: 0; }
+
 .connect__left { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+
+/* «ПОДКЛЮЧАЙТЕСЬ» — одно длинное слово: держим его в своей колонке */
+.screen--connect .display {
+  font-size: clamp(24px, 2.6vw, 40px);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
 
 .qr { background: var(--white); padding: 16px; border-radius: var(--r-lg); box-shadow: var(--sh-2); line-height: 0; }
 .qr svg { width: min(300px, 70vw); height: auto; }
@@ -857,7 +876,7 @@
 .connect__code-label { font-size: 14px; font-weight: 800; letter-spacing: .16em; color: var(--ink-55); }
 
 .connect__code-value {
-  font-size: clamp(40px, 8vw, 64px);
+  font-size: clamp(34px, 6vw, 60px);
   font-weight: 800;
   letter-spacing: .16em;
   background: var(--grad-fest);
@@ -868,7 +887,7 @@
 
 .connect__url { font-size: 13px; color: var(--ink-55); word-break: break-all; }
 .connect__right { display: flex; flex-direction: column; gap: 12px; }
-.connect__stat { display: flex; align-items: center; gap: 10px; font-size: 18px; }
+.connect__stat { display: flex; align-items: center; gap: 10px; font-size: 18px; flex-wrap: wrap; }
 .connect__count { font-weight: 800; font-size: 22px; }
 .connect__players { display: flex; flex-wrap: wrap; max-height: 168px; overflow-y: auto; }
 .connect__meta { display: flex; flex-wrap: wrap; gap: 8px; }

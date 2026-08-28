@@ -9,7 +9,10 @@
  * Что считается дефектом:
  *   — два текстовых блока перекрываются больше чем на четверть меньшего;
  *   — текст лежит на иллюстрации без собственной подложки;
- *   — текст выходит за край экрана по горизонтали или срезается контейнером.
+ *   — текст выходит за край экрана по горизонтали или срезается контейнером;
+ *   — текст переполняет собственный блок (центрированный заголовок при этом
+ *     остаётся в границах прямоугольника, а буквы наезжают на соседнюю колонку —
+ *     именно так наложение и проскочило мимо первой версии проверки).
  * Вертикальная прокрутка дефектом не считается — на телефоне это норма.
  */
 
@@ -77,6 +80,14 @@ window.__probe = function probe() {
     }
   }
 
+  // переполнение: содержимое шире или выше собственного блока
+  const overflowing = texts.filter((el) => {
+    const cs = getComputedStyle(el);
+    if (cs.overflow === 'auto' || cs.overflow === 'scroll' ||
+        cs.overflowX === 'auto' || cs.overflowX === 'scroll') return false;
+    return el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0;
+  }).map((el) => `${label(el)} (${el.scrollWidth}px в блоке ${el.clientWidth}px)`);
+
   const clipped = texts.filter((el) => {
     const r = box(el);
     if (r.left < -2 || r.right > innerWidth + 2) return true;
@@ -95,6 +106,7 @@ window.__probe = function probe() {
   window.__report[key] = {
     текстНаТексте: [...new Set(textOnText)].slice(0, 8),
     текстНаКартинке: [...new Set(textOnArt)].slice(0, 8),
+    переполнение: [...new Set(overflowing)].slice(0, 8),
     обрезано: [...new Set(clipped)].slice(0, 8),
     горизонтальныйСкролл: document.documentElement.scrollWidth > innerWidth + 1,
   };
@@ -103,7 +115,8 @@ window.__probe = function probe() {
 window.__overlapReport = function () {
   const rows = Object.entries(window.__report).map(([screen, r]) => {
     const bad = r.текстНаТексте.length + r.текстНаКартинке.length +
-                r.обрезано.length + (r.горизонтальныйСкролл ? 1 : 0);
+                r.переполнение.length + r.обрезано.length +
+                (r.горизонтальныйСкролл ? 1 : 0);
     return [screen, bad ? r : 'чисто'];
   });
   const dirty = rows.filter(([, v]) => v !== 'чисто');
