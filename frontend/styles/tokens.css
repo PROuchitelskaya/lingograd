@@ -1,0 +1,56 @@
+/* ЛИНГОГРАД — дизайн-токены (ТЗ §5–7) */
+:root{
+  /* Палитра */
+  --paper:#FFF8ED;
+  --blue:#3155D9;
+  --yellow:#FFC94A;
+  --orange:#F28C38;
+  --red:#E85B5B;
+  --green:#55B77A;
+  --ink:#20243A;
+  --white:#FFFFFF;
+  --violet:#7357C8;
+
+  /* Производные */
+  --ink-70:rgba(32,36,58,.70);
+  --ink-55:rgba(32,36,58,.55);
+  --ink-35:rgba(32,36,58,.35);
+  --ink-12:rgba(32,36,58,.12);
+  --ink-06:rgba(32,36,58,.06);
+  --blue-soft:#EAEFFF;
+  --violet-soft:#F1ECFF;
+  --yellow-soft:#FFF3D6;
+  --green-soft:#E6F5EC;
+  --red-soft:#FDECEC;
+
+  /* Градиенты (ТЗ §6) */
+  --grad-fest:linear-gradient(135deg,#3155D9 0%,#7357C8 100%);
+  --grad-autumn:linear-gradient(135deg,#FFC94A 0%,#F28C38 100%);
+  --grad-final:linear-gradient(135deg,#3155D9 0%,#E85B5B 100%);
+  --grad-night:linear-gradient(160deg,#1B2050 0%,#3B2A70 55%,#5B2E63 100%);
+
+  /* Типографика (ТЗ §7) */
+  --font:"Manrope","Inter",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-hand:"Caveat","Segoe Script",cursive;
+
+  /* Скругления и тени */
+  --r-sm:12px; --r-md:16px; --r-lg:24px; --r-xl:32px; --r-pill:999px;
+  --sh-1:0 2px 8px rgba(32,36,58,.06);
+  --sh-2:0 8px 24px rgba(32,36,58,.10);
+  --sh-3:0 18px 48px rgba(32,36,58,.16);
+  --sh-glow:0 0 0 6px rgba(49,85,217,.14);
+
+  /* Раскладка (ТЗ §32) */
+  --max:1440px;
+  --content:1200px;
+  --stage:820px;
+
+  --ease:cubic-bezier(.22,.8,.32,1);
+}
+
+/* Цвета районов (ТЗ §22–26) */
+.zone-words   { --z1:var(--blue);   --z2:var(--yellow); --z-bg:#FFF6E6; --z-ink:var(--ink); }
+.zone-morph   { --z1:var(--violet); --z2:var(--blue);   --z-bg:#EAF2FF; --z-ink:var(--ink); }
+.zone-syntax  { --z1:var(--orange); --z2:var(--yellow); --z-bg:#FFF0DC; --z-ink:var(--ink); }
+.zone-text    { --z1:#2A3576;       --z2:var(--yellow); --z-bg:#1E2550; --z-ink:#FFF8ED; }
+.zone-chaos   { --z1:var(--violet); --z2:var(--red);    --z-bg:#191E4A; --z-ink:#FFF8ED; }
