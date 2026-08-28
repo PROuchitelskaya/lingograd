@@ -2,33 +2,40 @@
 
 /* ------------------------------------------------------------- LANDING §8 */
 
-.screen--landing { position: relative; justify-content: flex-end; min-height: 100dvh; padding-bottom: 56px; }
+/* Две непересекающиеся полосы: текст сверху, иллюстрация снизу.
+   Раньше картинка лежала абсолютом под текстом — логотип наезжал на школу. */
+.screen--landing {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  align-content: stretch;
+  gap: 8px;
+  min-height: 100dvh;
+  padding: 20px 16px 0;
+}
 
 .landing__art {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: min(62vh, 520px);
-  z-index: 0;
+  grid-row: 2;
+  width: 100%;
+  height: clamp(190px, 32vh, 330px);
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
-  mask-image: linear-gradient(180deg, transparent 0%, #000 22%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 14%);
 }
 
 .landing__art .art { width: 100%; height: 100%; display: block; }
 
 .landing__inner {
-  position: relative;
-  z-index: 1;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 14px;
   text-align: center;
-  padding-top: 26px;
 }
 
 .logo {
-  font-size: clamp(46px, 12vw, 104px);
+  font-size: clamp(44px, min(11vw, 13vh), 104px);
   font-weight: 800;
   letter-spacing: -.04em;
   line-height: .95;

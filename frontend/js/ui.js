@@ -78,7 +78,11 @@ export function swapScreen(root, node, key) {
   node.classList.add('screen-enter');
   mount(root, node);
   root.dataset.screen = key || '';
-  requestAnimationFrame(() => node.classList.remove('screen-enter'));
+  // В фоновой вкладке requestAnimationFrame не выполняется, и экран остался бы
+  // смещённым и полупрозрачным — поэтому дублируем снятие класса таймером.
+  const reveal = () => node.classList.remove('screen-enter');
+  requestAnimationFrame(reveal);
+  setTimeout(reveal, 80);
   return node;
 }
 
