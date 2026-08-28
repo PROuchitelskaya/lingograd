@@ -3,6 +3,7 @@
 
 import { h, letterOf, mount } from './ui.js';
 import { sfx } from './audio.js';
+import { keeper } from './art.js';
 
 /**
  * @returns {{node: HTMLElement, lock(): void, unlock(): void, showResult(res): void}}
@@ -63,7 +64,7 @@ export function buildQuestion(q, { onSubmit }) {
         setPayload(i, { instant: true });
       },
     },
-      h('span', { class: 'answer__letter' }, letterOf(i)),
+      h('span', { class: 'answer__keeper', html: keeper(i, letterOf(i)) }),
       h('span', { class: 'answer__text' }, text),
     ));
     mount(body, h('div', { class: 'answers answers--grid' }, cards));
@@ -84,7 +85,8 @@ export function buildQuestion(q, { onSubmit }) {
           e.currentTarget.classList.add('is-picked');
           setPayload(o.value, { instant: true });
         },
-      }, h('span', { class: 'answer__icon' }, o.icon), h('span', { class: 'answer__text' }, o.label)))));
+      }, h('span', { class: 'answer__keeper' , html: keeper(i === 0 ? 2 : 4, o.icon) }),
+         h('span', { class: 'answer__text' }, o.label)))));
   }
 
   else if (q.type === 'multiple_choice') {
@@ -103,8 +105,9 @@ export function buildQuestion(q, { onSubmit }) {
             setPayload([...picked]);
           },
         },
-          h('span', { class: 'answer__check' }, '✓'),
-          h('span', { class: 'answer__text' }, text)))));
+          h('span', { class: 'answer__keeper', html: keeper(i, letterOf(i)) }),
+          h('span', { class: 'answer__text' }, text),
+          h('span', { class: 'answer__check' }, '✓')))));
   }
 
   else if (q.type === 'sort') {

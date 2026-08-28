@@ -6,7 +6,8 @@ import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
 import * as net from './net.js';
 import { sfx, setMood, startMusic, unlock } from './audio.js';
 import * as fx from './fx.js';
-import { cityScene, chaosVillain, chaosTower, bridge, schoolBell, crystal, cityMap } from './art.js';
+import { cityScene, chaosVillain, chaosTower, bridge, schoolBell, crystal, cityMap,
+         keeperBig } from './art.js';
 import { buildQuestion, revealBlock } from './question.js';
 import { settingsButton } from './settings.js';
 
@@ -484,15 +485,20 @@ function renderReveal() {
   const node = h('div', { class: `screen screen--reveal ${m.zone}` },
     hud(),
     h('div', { class: 'revealwrap' },
-      mine.answer_done
-        ? h('div', { class: `bigverdict ${mine.answer_correct ? 'is-ok' : 'is-no'}` },
-            h('span', { class: 'bigverdict__mark' }, mine.answer_correct ? '✓' : '⚠'),
-            h('span', null, mine.answer_correct
-              ? `ПРАВИЛЬНО  +${mine.answer_points}`
-              : 'ОШИБКА — это часть игры'))
-        : h('div', { class: 'bigverdict is-skip' },
-            h('span', { class: 'bigverdict__mark' }, '⏱'),
-            h('span', null, 'Время вышло')),
+      h('div', { class: 'revealhead' },
+        h('div', {
+          class: 'revealhead__keeper',
+          html: keeperBig(mine.answer_done ? (mine.answer_correct ? 'ok' : 'no') : 'idle'),
+        }),
+        mine.answer_done
+          ? h('div', { class: `bigverdict ${mine.answer_correct ? 'is-ok' : 'is-no'}` },
+              h('span', { class: 'bigverdict__mark' }, mine.answer_correct ? '✓' : '⚠'),
+              h('span', null, mine.answer_correct
+                ? `ПРАВИЛЬНО  +${mine.answer_points}`
+                : 'ОШИБКА — это часть игры'))
+          : h('div', { class: 'bigverdict is-skip' },
+              h('span', { class: 'bigverdict__mark' }, '⏱'),
+              h('span', null, 'Время вышло'))),
       revealBlock(r),
       h('div', { class: 'mini', id: 'mini-board' }, miniBoardRows()),
       h('div', { class: 'phase-bar' }, h('span', { id: 'phase-bar' }))),

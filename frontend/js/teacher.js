@@ -329,6 +329,11 @@ function renderLive() {
           }, state.paused ? '▶ ПРОДОЛЖИТЬ' : '⏸ ПАУЗА'),
           h('button', {
             class: 'btn btn--ctrl', type: 'button',
+            disabled: state.can_go_back === false,
+            onClick: () => net.send({ t: 'teacher', action: 'back' }),
+          }, '⏮ ПРЕДЫДУЩЕЕ ЗАДАНИЕ'),
+          h('button', {
+            class: 'btn btn--ctrl', type: 'button',
             onClick: () => net.send({ t: 'teacher', action: 'skip' }),
           }, '⏭ ПРОПУСТИТЬ'),
           h('button', {

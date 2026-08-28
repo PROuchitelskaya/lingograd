@@ -148,6 +148,7 @@ class GameSession:
         self.current_view: dict | None = None
         self.current_order: dict | None = None
         self.answers: dict[str, dict] = {}     # player_id -> {attempts, done, correct}
+        self.answers_history: dict[str, dict] = {}  # qid -> ответы (для «назад»)
         self.last_reveal: dict | None = None
         self.mission_report: dict | None = None
 
@@ -322,7 +323,9 @@ class GameSession:
         self.current_q = q
         self.current_view = built["view"]
         self.current_order = built["order"]
-        self.answers = {}
+        # у заданий, к которым учитель вернулся, ответы сохраняются: кто уже
+        # ответил — не отвечает и не получает баллы второй раз
+        self.answers = self.answers_history.setdefault(q["id"], {})
         self.global_index = sum(len(m["questions"]) for m in self.missions[:self.mission_index]) \
             + self.question_index + 1
         self.question_window_ms = q["time_limit"] * 1000
@@ -353,12 +356,17 @@ class GameSession:
             if self.question_index + 1 >= len(self.mission["questions"]):
                 self.chaos_hp = 0.0
 
-        self.log.append({
+        row = {
             "index": self.global_index, "id": q["id"], "district": self.mission["district"],
             "type": q["type"], "question": q["question"], "topic": q.get("topic", ""),
             "answered": answered, "correct": correct,
             "accuracy": round(share, 3),
-        })
+        }
+        existing = next((i for i, r in enumerate(self.log) if r["id"] == q["id"]), None)
+        if existing is None:
+            self.log.append(row)
+        else:
+            self.log[existing] = row
 
         self.last_reveal = reveal_payload(q, order) | {
             "answered": answered, "correct": correct, "share": round(share, 3),
@@ -382,6 +390,34 @@ class GameSession:
         }
         self.set_phase("mission_complete")
         await self.broadcast_state()
+
+    def has_previous(self) -> bool:
+        """Есть ли задание, к которому учитель может вернуться."""
+        if self.phase in ("question", "reveal"):
+            return self.question_index > 0 or self.mission_index > 0 or self.phase == "reveal"
+        return bool(self.current_q)
+
+    async def go_back(self) -> None:
+        """Вернуть класс к предыдущему заданию (ученик попросил повторить).
+
+        На разборе возвращает текущее задание, на задании — предыдущее.
+        Баллы за уже отвеченное не начисляются повторно: ответы сохранены.
+        """
+        if self.phase == "reveal" and self.current_q:
+            return await self.ask_question()
+
+        if self.phase == "question":
+            if self.question_index > 0:
+                self.question_index -= 1
+            elif self.mission_index > 0:
+                self.mission_index -= 1
+                self.question_index = len(self.mission["questions"]) - 1
+            else:
+                return
+            return await self.ask_question()
+
+        if self.current_q:                      # со служебных экранов — к заданию
+            return await self.ask_question()
 
     async def to_results(self) -> None:
         self.ranking = sorted(
@@ -610,6 +646,7 @@ class GameSession:
             data["players"] = [p.public() for p in self.players.values()]
             data["answered"] = self.answered_count()
             data["log"] = self.log[-40:]
+            data["can_go_back"] = self.has_previous()
             if self.phase in ("question", "reveal") and self.current_q:
                 data["teacher_answer"] = reveal_payload(self.current_q, self.current_order)
         return data
@@ -645,6 +682,8 @@ class GameSession:
         elif action == "skip":
             self.deadline = now_ms()
             await self.advance()
+        elif action == "back":
+            await self.go_back()
         elif action == "add_time":
             extra = int(value or 300) * 1000
             self.session_deadline += extra

@@ -254,3 +254,85 @@ export function cityMap() {
   </g>
 </svg>`;
 }
+
+/* Хранители букв — маленькие жители Лингограда, которые держат таблички
+   с вариантами ответа. Шесть разных силуэтов, чтобы варианты различались
+   не только буквой: ребёнок с задней парты видит, за кого голосует сосед. */
+
+const KEEPER_COLORS = ['#3155D9', '#F28C38', '#55B77A', '#7357C8', '#E85B5B', '#2A9D9A'];
+
+const KEEPER_HATS = [
+  // антенка с шариком
+  '<path d="M24 9 L24 3" stroke="COLOR" stroke-width="2.4" stroke-linecap="round"/>' +
+  '<circle cx="24" cy="2" r="3" fill="#FFC94A"/>',
+  // ушки
+  '<path d="M15 10 L12 2 L21 7 Z" fill="COLOR"/><path d="M33 10 L36 2 L27 7 Z" fill="COLOR"/>',
+  // хохолок
+  '<path d="M20 7 L18 1 M24 6 L24 0 M28 7 L30 1" stroke="COLOR" stroke-width="2.4" stroke-linecap="round"/>',
+  // книжка на голове
+  '<rect x="15" y="1" width="18" height="7" rx="2" fill="COLOR"/>' +
+  '<path d="M24 1 L24 8" stroke="#FFF8ED" stroke-width="1.6"/>',
+  // бантик
+  '<path d="M24 7 L17 2 L18 9 Z" fill="#FFC94A"/><path d="M24 7 L31 2 L30 9 Z" fill="#FFC94A"/>' +
+  '<circle cx="24" cy="7" r="2.4" fill="COLOR"/>',
+  // колпачок
+  '<path d="M24 0 L32 10 L16 10 Z" fill="COLOR"/><circle cx="24" cy="0.5" r="2.4" fill="#FFC94A"/>',
+];
+
+/**
+ * Хранитель с табличкой.
+ * @param {number} index  порядковый номер варианта — задаёт цвет и силуэт
+ * @param {string} sign   что написано на табличке (буква варианта, галочка)
+ */
+export function keeper(index = 0, sign = '') {
+  const color = KEEPER_COLORS[index % KEEPER_COLORS.length];
+  const hat = KEEPER_HATS[index % KEEPER_HATS.length].replaceAll('COLOR', color);
+  return `
+<svg class="keeper" viewBox="0 0 48 56" aria-hidden="true">
+  <g class="keeper__body">
+    ${hat}
+    <path d="M24 10 C33 10 38 16 38 25 C38 34 33 39 24 39 C15 39 10 34 10 25 C10 16 15 10 24 10 Z"
+          fill="${color}"/>
+    <g class="keeper__face">
+      <circle class="keeper__eye" cx="19" cy="23" r="4.2" fill="#FFF8ED"/>
+      <circle class="keeper__eye" cx="29" cy="23" r="4.2" fill="#FFF8ED"/>
+      <circle class="keeper__pupil" cx="19.8" cy="23.6" r="2" fill="#20243A"/>
+      <circle class="keeper__pupil" cx="29.8" cy="23.6" r="2" fill="#20243A"/>
+      <path class="keeper__mouth" d="M20 30.5 q4 3.4 8 0" stroke="#FFF8ED" stroke-width="2"
+            fill="none" stroke-linecap="round"/>
+    </g>
+  </g>
+  <g class="keeper__arms" stroke="${color}" stroke-width="3" stroke-linecap="round">
+    <path d="M12 30 L7 41"/><path d="M36 30 L41 41"/>
+  </g>
+  <g class="keeper__sign">
+    <rect x="6" y="40" width="36" height="15" rx="4" fill="#FFF8ED" stroke="${color}" stroke-width="2"/>
+    <text x="24" y="51.4" text-anchor="middle" font-family="Manrope, sans-serif"
+          font-weight="800" font-size="11" fill="${color}">${sign}</text>
+  </g>
+</svg>`;
+}
+
+/** Крупный хранитель для экрана разбора: радуется или подбадривает. */
+export function keeperBig(mood = 'idle') {
+  const color = mood === 'ok' ? '#55B77A' : mood === 'no' ? '#F28C38' : '#3155D9';
+  const mouth = mood === 'ok' ? 'M28 46 q12 11 24 0' : mood === 'no' ? 'M28 50 q12 -7 24 0' : 'M30 47 q10 6 20 0';
+  const arms = mood === 'ok'
+    ? '<path d="M16 46 L4 30"/><path d="M64 46 L76 30"/>'      // руки вверх
+    : '<path d="M16 46 L6 60"/><path d="M64 46 L74 60"/>';
+  return `
+<svg class="keeper keeper--big keeper--${mood}" viewBox="0 0 80 84" aria-hidden="true">
+  <path d="M40 6 L40 -2" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="40" cy="-1" r="4" fill="#FFC94A"/>
+  <path d="M40 8 C58 8 68 20 68 38 C68 56 58 66 40 66 C22 66 12 56 12 38 C12 20 22 8 40 8 Z"
+        fill="${color}"/>
+  <g class="keeper__face">
+    <circle class="keeper__eye" cx="30" cy="34" r="7" fill="#FFF8ED"/>
+    <circle class="keeper__eye" cx="50" cy="34" r="7" fill="#FFF8ED"/>
+    <circle class="keeper__pupil" cx="31.4" cy="35" r="3.2" fill="#20243A"/>
+    <circle class="keeper__pupil" cx="51.4" cy="35" r="3.2" fill="#20243A"/>
+    <path d="${mouth}" stroke="#FFF8ED" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+  </g>
+  <g class="keeper__arms" stroke="${color}" stroke-width="5" stroke-linecap="round">${arms}</g>
+</svg>`;
+}
