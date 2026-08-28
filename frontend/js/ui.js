@@ -100,6 +100,12 @@ export function toast(message, kind = 'info') {
 
 /** Счётчик кристаллов, который «догоняет» новое значение. */
 export function animateNumber(node, from, to, ms = 700) {
+  // системная настройка «уменьшить движение» читается каждый раз:
+  // ученик может включить её посреди урока
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    node.textContent = String(Math.round(to));
+    return;
+  }
   const start = performance.now();
   const step = (now) => {
     const p = Math.min(1, (now - start) / ms);

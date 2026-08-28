@@ -1,8 +1,10 @@
 // Праздничные эффекты: листья, конфетти, кристаллы, буквы Хаоса (ТЗ §45).
 // Один canvas на всю игру + немного DOM-анимаций. Уважает prefers-reduced-motion.
 
-const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MOBILE = window.matchMedia('(max-width: 767px)').matches;
+// оба запроса опрашиваем при каждом эффекте: настройка системы и поворот
+// экрана меняются во время урока, а модуль загружается один раз
+const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const mobile = () => window.matchMedia('(max-width: 767px)').matches;
 
 let canvas = null, ctx = null, raf = null;
 let particles = [];
@@ -102,9 +104,9 @@ function drawPlane(p) {
 }
 
 function push(list) {
-  if (REDUCED) return;
+  if (reduced()) return;
   ensureCanvas();
-  const cap = MOBILE ? 140 : 320;
+  const cap = mobile() ? 140 : 320;
   particles.push(...list);
   if (particles.length > cap) particles = particles.slice(-cap);
   if (!raf) raf = requestAnimationFrame(loop);
@@ -120,7 +122,7 @@ function base(x, y, extra = {}) {
 
 /** Осенние листья фоном — включается на праздничных экранах (ТЗ §14). */
 export function leaves(on) {
-  leafMode = on && !REDUCED;
+  leafMode = on && !reduced();
   if (leafTimer) { clearInterval(leafTimer); leafTimer = null; }
   if (!leafMode) return;
   const spawn = () => {
@@ -134,15 +136,15 @@ export function leaves(on) {
       gravity: 0.006, sway: 0.05, life: 900,
     })]);
   };
-  for (let i = 0; i < (MOBILE ? 4 : 8); i++) {
+  for (let i = 0; i < (mobile() ? 4 : 8); i++) {
     setTimeout(spawn, i * 260);
   }
-  leafTimer = setInterval(spawn, MOBILE ? 1400 : 750);
+  leafTimer = setInterval(spawn, mobile() ? 1400 : 750);
 }
 
 /** Бумажные самолётики (экран «1 сентября»). */
 export function planes(count = 3) {
-  if (REDUCED) return;
+  if (reduced()) return;
   for (let i = 0; i < count; i++) {
     setTimeout(() => push([base(-60, 80 + Math.random() * 240, {
       kind: 'plane', color: '#FFFFFF', size: 13,
@@ -153,7 +155,8 @@ export function planes(count = 3) {
 }
 
 export function confettiBurst(x = window.innerWidth / 2, y = window.innerHeight / 3,
-                              count = MOBILE ? 50 : 90) {
+                              count = 0) {
+  if (!count) count = mobile() ? 50 : 90;
   const list = [];
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
@@ -171,12 +174,12 @@ export function confettiBurst(x = window.innerWidth / 2, y = window.innerHeight 
 
 /** Праздничный дождь конфетти сверху (финал, ТЗ §28). */
 export function confettiRain(ms = 4000) {
-  if (REDUCED) return;
+  if (reduced()) return;
   const started = Date.now();
   const timer = setInterval(() => {
     if (Date.now() - started > ms) return clearInterval(timer);
     const list = [];
-    for (let i = 0; i < (MOBILE ? 6 : 12); i++) {
+    for (let i = 0; i < (mobile() ? 6 : 12); i++) {
       list.push(base(Math.random() * window.innerWidth, -20, {
         color: CONFETTI_COLORS[(Math.random() * CONFETTI_COLORS.length) | 0],
         size: 6 + Math.random() * 8,
@@ -190,7 +193,8 @@ export function confettiRain(ms = 4000) {
 
 /** Буквы разлетаются от Хаоса (ТЗ §27). */
 export function letterBurst(x = window.innerWidth / 2, y = window.innerHeight / 2,
-                            count = MOBILE ? 22 : 40) {
+                            count = 0) {
+  if (!count) count = mobile() ? 22 : 40;
   const list = [];
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
@@ -209,7 +213,7 @@ export function letterBurst(x = window.innerWidth / 2, y = window.innerHeight / 
 
 /** Кристаллы летят от карточки ответа к счётчику команды (ТЗ §19). */
 export function crystalsTo(fromEl, toEl, count = 6) {
-  if (REDUCED || !fromEl || !toEl) return;
+  if (reduced() || !fromEl || !toEl) return;
   const a = fromEl.getBoundingClientRect();
   const b = toEl.getBoundingClientRect();
   const x0 = a.left + a.width / 2, y0 = a.top + a.height / 2;
@@ -238,7 +242,7 @@ export function crystalsTo(fromEl, toEl, count = 6) {
 }
 
 export function shake(el) {
-  if (!el || REDUCED) return;
+  if (!el || reduced()) return;
   el.classList.remove('is-shake');
   void el.offsetWidth;
   el.classList.add('is-shake');
@@ -246,7 +250,7 @@ export function shake(el) {
 }
 
 export function flash(color = 'rgba(255,255,255,.55)') {
-  if (REDUCED) return;
+  if (reduced()) return;
   const div = document.createElement('div');
   div.className = 'fx-flash';
   div.style.background = color;
