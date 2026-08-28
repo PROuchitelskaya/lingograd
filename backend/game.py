@@ -167,15 +167,20 @@ class GameSession:
     def team_members(self, team_id: str) -> list[Player]:
         return [p for p in self.players.values() if p.team_id == team_id]
 
-    def add_player(self, name: str, player_id: str | None = None) -> Player:
+    def add_player(self, player_id: str | None = None) -> Player:
+        """Заводит игрока под игровым прозвищем.
+
+        Имена и фамилии не запрашиваются и не хранятся: на сервере остаются
+        только прозвище, команда и счёт, по которым конкретного ребёнка
+        определить нельзя. Так игру можно раздать любому числу школ,
+        не собирая согласий на обработку персональных данных.
+        """
         if player_id and player_id in self.players:
             p = self.players[player_id]
             p.connected = True
-            if name:
-                p.name = name[:24]
             return p
         pid = player_id or secrets.token_urlsafe(9)
-        p = Player(id=pid, name=(name or "Ученик")[:24])
+        p = Player(id=pid, name=f"Хранитель {len(self.players) + 1}")
         self.players[pid] = p
         if self.phase != "lobby":
             # опоздавший подключился после старта: без команды он не смог бы

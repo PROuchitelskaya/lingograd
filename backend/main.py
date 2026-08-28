@@ -222,7 +222,8 @@ async def ws_endpoint(ws: WebSocket):
                 return await ws.close()
             conn = Connection(ws, "teacher", None)
         else:
-            player = session.add_player(hello.get("name", ""), hello.get("player_id"))
+            # имя из hello сознательно игнорируется: игрок получает прозвище
+            player = session.add_player(hello.get("player_id"))
             conn = Connection(ws, "student", player.id)
             await hub.send(ws, {"t": "welcome", "player_id": player.id,
                                 "name": player.name, "code": session.code})
@@ -242,10 +243,6 @@ async def ws_endpoint(ws: WebSocket):
             elif t == "pick_team" and player:
                 if session.pick_team(player, msg.get("team_id", "")):
                     await hub.push_state(code)
-
-            elif t == "rename" and player:
-                player.name = (msg.get("name") or player.name)[:24]
-                await hub.push_state(code)
 
             elif t == "answer" and player:
                 res = await session.submit(player, msg.get("qid", ""), msg.get("payload"))
@@ -312,4 +309,6 @@ if __name__ == "__main__":
     print(f"  Ученики : http://{ip}:{PORT}/")
     print(f"  Учитель : http://{ip}:{PORT}/teacher")
     print(f"  Локально: http://127.0.0.1:{PORT}/\n")
-    uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="warning")
+    # access-логи выключены намеренно: в них попадали бы IP-адреса устройств,
+    # а игра не должна накапливать ничего, что связывает ответы с человеком
+    uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="warning", access_log=False)

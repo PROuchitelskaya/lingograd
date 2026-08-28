@@ -138,10 +138,6 @@ export function close() {
   if (ws) ws.close();
 }
 
-export function setName(name) {
-  if (hello) hello.name = name;
-}
-
 // Вкладка вернулась из фона — тут же просим свежее состояние.
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {

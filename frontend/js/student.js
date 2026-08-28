@@ -41,7 +41,7 @@ async function resumeOrLanding() {
   try {
     const res = await fetch(`/api/session/${saved.code}`);
     if (!res.ok) throw new Error('нет такой игры');
-    net.connect({ code: saved.code, role: 'student', name: saved.name, player_id: saved.id });
+    net.connect({ code: saved.code, role: 'student', player_id: saved.id });
   } catch {
     showLanding();
   }
@@ -95,7 +95,7 @@ function wireNet() {
     toast('Прозвенел звонок! Учитель может добавить время', 'warn');
   });
   net.on('welcome', (msg) => {
-    saveLocal('lg_player', { id: msg.player_id, name: msg.name, code: msg.code });
+    saveLocal('lg_player', { id: msg.player_id, code: msg.code });
   });
   net.on('error', (msg) => {
     toast(msg.message || 'Ошибка', 'error');
@@ -139,20 +139,17 @@ function showJoin(prefill = '', error = '') {
     placeholder: 'КОД', value: prefill, autocomplete: 'off', spellcheck: 'false',
     'aria-label': 'Код игры',
     onInput: (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); },
-  });
-  const nameInput = h('input', {
-    class: 'field', type: 'text', maxlength: '24', placeholder: 'Ваше имя',
-    value: saved.name || '', autocomplete: 'off', 'aria-label': 'Имя',
+    onKeydown: (e) => { if (e.key === 'Enter') go(); },
   });
 
   const go = () => {
     const code = codeInput.value.trim().toUpperCase();
-    const name = nameInput.value.trim() || 'Ученик';
     if (code.length < 4) return toast('Введите код из 4 символов', 'warn');
     unlock();
-    saveLocal('lg_player', { ...saved, name, code });
+    saveLocal('lg_player', { ...saved, code });
+    // имя не спрашиваем и не отправляем: игрок получит прозвище от сервера
     net.connect({
-      code, role: 'student', name,
+      code, role: 'student',
       player_id: saved.code === code ? saved.id : undefined,
     });
     mount(root, waitingConnect());
@@ -166,14 +163,13 @@ function showJoin(prefill = '', error = '') {
       error ? h('div', { class: 'alert' }, error) : null,
       h('label', { class: 'field-label' }, 'Введите код игры'),
       codeInput,
-      h('label', { class: 'field-label' }, 'Как вас зовут?'),
-      nameInput,
       primaryButton('ВОЙТИ', go),
-      h('p', { class: 'hint' }, 'Код игры выдаст учитель')),
+      h('p', { class: 'hint' }, 'Код игры выдаст учитель'),
+      h('p', { class: 'hint' }, 'Игра не спрашивает имя и фамилию — вы получите игровое прозвище')),
   );
   fx.leaves(true);
   swapScreen(root, node, 'join');
-  setTimeout(() => (prefill ? nameInput : codeInput).focus({ preventScroll: true }), 150);
+  setTimeout(() => codeInput.focus({ preventScroll: true }), 150);
 }
 
 function waitingConnect() {
@@ -310,6 +306,7 @@ function renderLobby() {
     h('div', { class: 'card card--wait' },
       h('div', { class: 'wait__emoji' }, team?.emoji || '🎒'),
       h('h1', { class: 'h1' }, `Вы в команде «${team?.name || ''}»`),
+      h('p', { class: 'wait__nick' }, `Ваше прозвище: ${state.me?.name || '—'}`),
       h('p', { class: 'muted' }, team?.motto || ''),
       h('div', { class: 'wait__pulse' }, 'Ждём остальных Хранителей…'),
       h('div', { class: 'wait__count' }, players(state.online)),
