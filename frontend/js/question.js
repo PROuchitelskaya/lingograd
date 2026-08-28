@@ -10,6 +10,8 @@ import { sfx } from './audio.js';
 export function buildQuestion(q, { onSubmit }) {
   let payload = null;
   let locked = false;
+  let allowEmpty = false;      // пустой набор запятых — тоже ответ
+  let resetState = () => {};   // очистка выбора перед второй попыткой
 
   const submitBtn = h('button', {
     class: 'btn btn--primary q-submit', type: 'button', disabled: true,
@@ -22,7 +24,7 @@ export function buildQuestion(q, { onSubmit }) {
   function setPayload(value, { instant = false } = {}) {
     payload = value;
     const ready = value !== null && value !== undefined &&
-      !(Array.isArray(value) && value.length === 0) &&
+      (allowEmpty || !(Array.isArray(value) && value.length === 0)) &&
       !(typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0) &&
       !(typeof value === 'string' && !value.trim());
     submitBtn.disabled = locked || !ready;
@@ -34,7 +36,16 @@ export function buildQuestion(q, { onSubmit }) {
     locked = true;
     submitBtn.disabled = true;
     node.classList.add('is-answered');
-    onSubmit(payload);
+    // Телефон на секунду потерял школьный вайфай — ответ не ушёл.
+    // Возвращаем карточку в рабочее состояние, иначе ученик выпадает из задания.
+    if (onSubmit(payload) === false) {
+      locked = false;
+      submitBtn.disabled = false;
+      node.classList.remove('is-answered');
+      mount(feedback, h('div', { class: 'verdict verdict--try' },
+        h('span', { class: 'verdict__mark' }, '⟳'),
+        h('span', null, 'Нет связи. Нажмите ещё раз')));
+    }
   }
 
   // ------------------------------------------------------------ типы
@@ -78,6 +89,7 @@ export function buildQuestion(q, { onSubmit }) {
 
   else if (q.type === 'multiple_choice') {
     const picked = new Set();
+    resetState = () => { picked.clear(); setPayload([]); };
     mount(body,
       h('p', { class: 'q-tip' }, 'Можно выбрать несколько вариантов'),
       h('div', { class: 'answers answers--grid' },
@@ -97,6 +109,7 @@ export function buildQuestion(q, { onSubmit }) {
 
   else if (q.type === 'sort') {
     let order = q.items.map((_, i) => i);
+    resetState = () => { order = q.items.map((_, i) => i); redraw(); };
     const list = h('ol', { class: 'sortable' });
 
     const redraw = () => {
@@ -173,11 +186,20 @@ export function buildQuestion(q, { onSubmit }) {
           text);
       }));
 
-      setPayload(Object.keys(links).length ? { ...links } : null);
+      const done = Object.keys(links).length;
+      const tip = body.querySelector('#match-tip');
+      if (tip) tip.textContent = `Соединено пар: ${done} из ${q.left.length}`;
+      setPayload(done === q.left.length ? { ...links } : null);
     };
 
+    resetState = () => {
+      for (const k of Object.keys(links)) delete links[k];
+      activeLeft = null;
+      redraw();
+    };
     mount(body,
       h('p', { class: 'q-tip' }, 'Нажмите слева, затем справа — получится пара'),
+      h('p', { class: 'q-tip', id: 'match-tip' }, `Соединено пар: 0 из ${q.left.length}`),
       h('div', { class: 'match' }, leftCol, rightCol));
     redraw();
   }
@@ -200,7 +222,7 @@ export function buildQuestion(q, { onSubmit }) {
     const redraw = () => {
       mount(line, q.tokens.flatMap((tok, i) => {
         const parts = [h('span', { class: 'punct__word' }, tok)];
-        if (i < q.tokens.length - 1 || true) {
+        if (i < q.tokens.length - 1) {   // после последнего слова запятой не бывает
           parts.push(h('button', {
             class: `punct__gap ${commas.has(i) ? 'is-on' : ''}`, type: 'button',
             'aria-label': commas.has(i) ? 'Убрать запятую' : 'Поставить запятую',
@@ -214,19 +236,20 @@ export function buildQuestion(q, { onSubmit }) {
         }
         return parts;
       }));
-      setPayload([...commas].sort((a, b) => a - b));
+      setPayload([...commas].sort((a, b) => a - b), { allowEmpty: true });
     };
 
     mount(body,
       h('p', { class: 'q-tip' }, 'Нажимайте на промежутки, чтобы поставить запятую'),
       line);
+    allowEmpty = true;
+    resetState = () => { commas.clear(); redraw(); };
     redraw();
-    setPayload([]);               // пустой набор запятых — тоже ответ
-    submitBtn.disabled = false;
   }
 
   else if (q.type === 'word_build') {
     const used = [];
+    resetState = () => { used.length = 0; redraw(); };
     const slots = h('div', { class: 'build__slots' });
     const pool = h('div', { class: 'build__pool' });
 
@@ -257,6 +280,7 @@ export function buildQuestion(q, { onSubmit }) {
 
   else if (q.type === 'highlight') {
     const picked = new Set();
+    resetState = () => { picked.clear(); redraw(); };
     const multi = !!q.multi;
     const line = h('div', { class: 'tokens' });
 
@@ -315,7 +339,8 @@ export function buildQuestion(q, { onSubmit }) {
           h('span', { class: 'verdict__mark' }, '↻'),
           h('span', null, `Почти! Попробуйте ещё раз${res.hint ? '. ' + res.hint : ''}`)));
         body.querySelectorAll('.is-picked').forEach((n) => n.classList.remove('is-picked'));
-        submitBtn.disabled = payload === null;
+        resetState();   // иначе к новому выбору молча приклеится старый
+        submitBtn.disabled = payload === null || payload === undefined;
         return;
       }
       node.classList.add('is-wrong');

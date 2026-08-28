@@ -61,6 +61,7 @@ export function primaryButton(label, onClick, opts = {}) {
     class: `btn btn--primary ${opts.class || ''}`,
     onClick,
     disabled: opts.disabled,
+    id: opts.id,
     type: 'button',
   }, label);
 }

@@ -45,7 +45,7 @@
   font-size: clamp(15px, 3.4vw, 24px);
   font-weight: 800;
   letter-spacing: .34em;
-  color: var(--orange);
+  color: var(--orange-ink);
   text-transform: uppercase;
 }
 
@@ -99,7 +99,7 @@
 .teamcard__emoji { font-size: 40px; }
 .teamcard__name { font-size: 20px; font-weight: 800; letter-spacing: .02em; }
 .teamcard__motto { font-size: 14px; color: var(--ink-55); }
-.teamcard__count { margin-top: auto; font-size: 13px; font-weight: 700; color: var(--team); }
+.teamcard__count { margin-top: auto; font-size: 13px; font-weight: 700; color: var(--ink-70); }
 
 /* ------------------------------------------------- КОМНАТА ОЖИДАНИЯ §12–13 */
 
@@ -229,7 +229,7 @@
   animation: nodepulse 2.2s var(--ease) infinite;
 }
 
-.mapnode--active .mapnode__state { color: var(--orange); }
+.mapnode--active .mapnode__state { color: var(--orange-ink); }
 
 @keyframes nodepulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(242,140,56,.42), var(--sh-2); }
@@ -500,7 +500,7 @@
   align-items: center;
 }
 
-.build__empty { color: var(--ink-35); font-weight: 600; }
+.build__empty { color: var(--ink-70); font-weight: 600; }
 .build__pool { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .tile {
@@ -598,7 +598,7 @@
   gap: 8px;
 }
 
-.reveal__label { font-size: 12px; font-weight: 800; letter-spacing: .12em; color: var(--green); }
+.reveal__label { font-size: 12px; font-weight: 800; letter-spacing: .12em; color: var(--green-ink); }
 .reveal__answer { font-size: clamp(18px, 3vw, 24px); font-weight: 800; }
 .reveal__why { margin: 0; color: var(--ink-70); font-size: 16px; }
 .reveal__stat { font-size: 14px; font-weight: 700; color: var(--ink-55); }
@@ -676,7 +676,7 @@
 }
 
 .victory__bell { width: min(160px, 42vw); animation: swing 1.6s var(--ease) infinite; transform-origin: 50% 8%; }
-.victory__title { font-size: clamp(16px, 3vw, 22px); font-weight: 800; letter-spacing: .2em; color: var(--orange); }
+.victory__title { font-size: clamp(16px, 3vw, 22px); font-weight: 800; letter-spacing: .2em; color: var(--orange-ink); }
 
 .victory__letters { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
 
@@ -758,7 +758,7 @@
 .award__team { font-size: 15px; font-weight: 700; color: var(--blue); }
 .award__value { font-size: 13px; color: var(--ink-55); }
 .awards__foot { text-align: center; display: flex; flex-direction: column; gap: 6px; }
-.awards__foot .lead { font-weight: 800; color: var(--orange); letter-spacing: .04em; }
+.awards__foot .lead { font-weight: 800; color: var(--orange-ink); letter-spacing: .04em; }
 
 /* ------------------------------------------------- ЭКРАН УЧИТЕЛЯ §12, §43 */
 
@@ -911,7 +911,7 @@
   border-radius: var(--r-sm);
 }
 
-.anal__pct { font-weight: 800; color: var(--orange); }
+.anal__pct { font-weight: 800; color: var(--orange-ink); }
 .anal__q { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .anal__topic { font-size: 12px; color: var(--ink-55); }
 
@@ -943,4 +943,41 @@
   .connect__players { max-height: 120px; }
   .punct { font-size: 17px; }
   .tile { min-width: 44px; min-height: 52px; font-size: 19px; }
+}
+
+/* ------------------------------------------------------------- ПАУЗА §43 */
+
+.pauseveil {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(32, 36, 58, .58);
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(3px);
+}
+
+.pauseveil[hidden] { display: none; }
+
+.pauseveil__card {
+  background: var(--white);
+  border-radius: var(--r-xl);
+  padding: 30px 34px;
+  text-align: center;
+  box-shadow: var(--sh-3);
+  max-width: min(360px, 88vw);
+}
+
+.pauseveil__icon { font-size: 46px; }
+.pauseveil__title { font-size: 26px; font-weight: 800; letter-spacing: .16em; margin: 6px 0; }
+.pauseveil__text { color: var(--ink-70); font-size: 15px; }
+
+.teacherq__paused {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  background: var(--yellow-soft);
+  color: #6E4A12;
+  font-weight: 800;
+  text-align: center;
 }

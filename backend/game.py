@@ -144,6 +144,7 @@ class GameSession:
         self.finished = False
 
         self.current_q: dict | None = None
+        self.question_window_ms = 0    # фактическая длительность вопроса с учётом «+15 с»
         self.current_view: dict | None = None
         self.current_order: dict | None = None
         self.answers: dict[str, dict] = {}     # player_id -> {attempts, done, correct}
@@ -172,9 +173,16 @@ class GameSession:
         pid = player_id or secrets.token_urlsafe(9)
         p = Player(id=pid, name=(name or "Ученик")[:24])
         self.players[pid] = p
+        if self.phase != "lobby":
+            # опоздавший подключился после старта: без команды он не смог бы
+            # ответить ни разу за урок, поэтому сажаем его в самую маленькую
+            p.team_id = min(self.teams, key=lambda t: len(self.team_members(t)))
         return p
 
     def pick_team(self, player: Player, team_id: str) -> bool:
+        if team_id == "" and self.phase == "lobby":
+            player.team_id = None      # «сменить команду» до начала игры
+            return True
         if team_id not in self.teams:
             return False
         if self.phase != "lobby" and player.team_id:
@@ -197,7 +205,10 @@ class GameSession:
         return self.missions[self.mission_index]
 
     def phase_left_ms(self) -> int:
-        return max(0, self.deadline - now_ms())
+        # на паузе время не идёт: иначе объяснение учителя у доски съедало бы
+        # у класса бонус за скорость, а таймер на телефонах доходил бы до нуля
+        reference = self.pause_started if self.paused else now_ms()
+        return max(0, self.deadline - reference)
 
     def session_left_ms(self) -> int:
         if not self.session_deadline:
@@ -209,6 +220,10 @@ class GameSession:
         if seconds is None:
             seconds = PHASE_TIME.get(phase, 10)
         self.deadline = now_ms() + int(seconds * 1000)
+        if self.paused:
+            # фаза создана уже во время паузы (учитель нажал «пропустить»),
+            # поэтому при снятии паузы ей не нужно возвращать «просроченное» время
+            self.pause_started = now_ms()
 
     async def start(self) -> None:
         if self.phase != "lobby":
@@ -222,13 +237,12 @@ class GameSession:
 
     async def _loop(self) -> None:
         """Тикер: двигает фазы и раз в секунду рассылает лёгкий tick."""
-        try:
-            last_tick = 0
-            while not self.finished:
-                await asyncio.sleep(0.2)
-                if self.paused:
-                    continue
-
+        last_tick = 0
+        while not self.finished:
+            await asyncio.sleep(0.2)
+            if self.paused:
+                continue
+            try:
                 if (not self.time_over and self.session_deadline
                         and now_ms() >= self.session_deadline):
                     self.time_over = True
@@ -247,8 +261,13 @@ class GameSession:
                         "answered": self.answered_count(),
                         "online": self.online_count(),
                     })
-        except asyncio.CancelledError:
-            raise
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                # Урок важнее одной ошибки: если что-то упало, комната не должна
+                # замереть — учитель доведёт игру кнопками «пропустить» и «к результатам».
+                print(f"[игра {self.code}] сбой в тикере: {type(exc).__name__}: {exc}")
+                self.deadline = now_ms() + 3000
 
     def answered_count(self) -> int:
         return sum(1 for a in self.answers.values() if a.get("done"))
@@ -306,6 +325,7 @@ class GameSession:
         self.answers = {}
         self.global_index = sum(len(m["questions"]) for m in self.missions[:self.mission_index]) \
             + self.question_index + 1
+        self.question_window_ms = q["time_limit"] * 1000
         self.set_phase("question", q["time_limit"])
         await self.broadcast_state()
 
@@ -392,13 +412,14 @@ class GameSession:
         correct = check(self.current_q, self.current_order, payload)
         q = self.current_q
         team = self.teams.get(player.team_id)
-        left_ms = self.phase_left_ms()
-        spent_ms = max(0, q["time_limit"] * 1000 - left_ms)
+        window_ms = self.question_window_ms or q["time_limit"] * 1000
+        left_ms = min(self.phase_left_ms(), window_ms)
+        spent_ms = max(0, window_ms - left_ms)
 
         if correct:
             base = q["points"]
             if rec["attempts"] == 1:
-                speed = left_ms / (q["time_limit"] * 1000)
+                speed = left_ms / window_ms
                 gained = int(round(base + base * 0.5 * speed))
             else:
                 gained = max(1, base // 2)
@@ -631,9 +652,13 @@ class GameSession:
             await self.broadcast_state()
         elif action == "extend_question":
             if self.phase == "question":
-                self.deadline += int(value or 15) * 1000
+                extra = int(value or 15) * 1000
+                self.deadline += extra
+                self.question_window_ms += extra
                 await self.broadcast_state()
         elif action == "finish":
+            if self.phase == "question" and self.current_q:
+                await self.close_question()   # иначе задание пропадёт из разбора
             await self.to_results()
 
     def analytics(self) -> dict:

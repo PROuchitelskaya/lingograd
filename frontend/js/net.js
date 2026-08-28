@@ -6,6 +6,7 @@ let ws = null;
 let hello = null;
 let retry = 0;
 let reconnectTimer = null;
+let pingTimer = null;
 let manualClose = false;
 let timeOffset = 0;           // серверное время минус локальное
 let status = 'idle';
@@ -44,6 +45,17 @@ export function connect(params) {
 }
 
 function open() {
+  // Телефон вышел из сна: запланированный реконнект уже мог сработать —
+  // второй сокет поверх живого оставил бы на сервере «призрака» (ТЗ §41).
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+  if (ws) {
+    ws.onopen = ws.onmessage = ws.onclose = ws.onerror = null;
+    try { ws.close(); } catch { /* уже закрыт */ }
+  }
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   setStatus(retry ? 'reconnecting' : 'connecting');
   try {
@@ -96,9 +108,10 @@ function scheduleReconnect() {
 }
 
 function ping() {
+  if (pingTimer) clearTimeout(pingTimer);
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
   send({ t: 'ping' });
-  setTimeout(ping, 15000);
+  pingTimer = setTimeout(ping, 15000);   // одна цепочка на всё время сессии
 }
 
 export function send(msg) {
@@ -113,6 +126,15 @@ export function sync() { send({ t: 'sync' }); }
 
 export function close() {
   manualClose = true;
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+  if (pingTimer) {
+    clearTimeout(pingTimer);
+    pingTimer = null;
+  }
+  retry = 0;
   if (ws) ws.close();
 }
 

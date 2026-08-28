@@ -138,9 +138,11 @@ function renderSetup() {
 function render() {
   if (!state) return;
   state._at = Date.now();
+  // online в ключ не входит: иначе проекционный экран с QR-кодом полностью
+  // перерисовывался бы при входе каждого ученика — как раз когда его сканируют
   const key = [state.phase, state.mission?.index,
                state.phase === 'question' ? state.question?.id : '',
-               state.phase === 'lobby' ? state.online : ''].join('|');
+               state.paused ? 'pause' : ''].join('|');
   if (key === screenKey) { updateLive(); return; }
   screenKey = key;
 
@@ -166,6 +168,16 @@ function updateTimers() {
 function updateLive() {
   const board = document.getElementById('t-board');
   if (board && state) mount(board, boardRows());
+  const online = document.getElementById('t-online');
+  if (online && state) online.textContent = players(state.online);
+  const roster = document.getElementById('t-players');
+  if (roster && state) {
+    mount(roster, (state.players || []).map((p) => h('span', {
+      class: `pill ${p.connected ? '' : 'is-off'}`,
+    }, p.name)));
+  }
+  const startBtn = document.getElementById('t-start');
+  if (startBtn && state) startBtn.disabled = state.online === 0;
   const counter = document.getElementById('t-answered');
   if (counter && state) {
     counter.textContent = `${state.answered || 0} из ${state.online || 0}`;
@@ -205,10 +217,10 @@ function renderConnect() {
       h('div', { class: 'connect__right' },
         h('div', { class: 'connect__stat' },
           h('span', { class: 'dot dot--on' }),
-          h('span', { class: 'connect__count' }, players(state.online)),
+          h('span', { class: 'connect__count', id: 't-online' }, players(state.online)),
           h('span', { class: 'muted' }, 'подключились')),
         h('div', { class: 'tboard', id: 't-board' }, boardRows()),
-        h('div', { class: 'connect__players' },
+        h('div', { class: 'connect__players', id: 't-players' },
           (state.players || []).map((p) => h('span', {
             class: `pill ${p.connected ? '' : 'is-off'}`,
           }, p.name))),
@@ -220,7 +232,7 @@ function renderConnect() {
         primaryButton('НАЧАТЬ ИГРУ', () => {
           unlock(); startMusic(); sfx.start();
           net.send({ t: 'teacher', action: 'start' });
-        }, { disabled: state.online === 0 }),
+        }, { disabled: state.online === 0, class: 't-start', id: 't-start' }),
         state.online === 0 ? h('p', { class: 'hint' }, 'Ждём первых игроков…') : null,
         ghostButton('Новая игра', () => {
           saveLocal('lg_teacher', null); session = null; net.close(); renderSetup();
@@ -241,7 +253,10 @@ function renderLive() {
   }[state.phase] || state.phase;
 
   const q = state.question;
-  const answer = state.teacher_answer;
+  // Экран учителя — это проектор: показывать ключ во время задания нельзя
+  // (ТЗ §42), поэтому в фазе вопроса он скрыт до нажатия «Показать ответ».
+  const answer = state.phase === 'reveal' ? state.teacher_answer : null;
+  const hidden = state.phase === 'question' ? state.teacher_answer : null;
 
   const node = h('div', { class: `screen screen--live ${m.zone}` },
     h('header', { class: 'livebar' },
@@ -265,9 +280,21 @@ function renderLive() {
                     (Array.isArray(answer?.correct_index) && answer.correct_index.includes(i))
                     ? 'is-right' : ''}`,
                 }, `${'АБВГДЕ'[i]}. ${a}`))) : null,
+              state.paused ? h('div', { class: 'teacherq__paused' }, '⏸ ПАУЗА — время остановлено') : null,
               answer ? h('div', { class: 'teacherq__key' },
                 h('strong', null, 'Ответ: '), answer.correct_text || '—',
                 answer.explanation ? h('p', { class: 'teacherq__why' }, answer.explanation) : null) : null,
+              hidden ? h('button', {
+                class: 'btn btn--ghost btn--small', type: 'button',
+                onClick: (e) => {
+                  const box = e.currentTarget.nextElementSibling;
+                  box.hidden = !box.hidden;
+                  e.currentTarget.textContent = box.hidden ? '👁 Показать ответ' : '🙈 Скрыть ответ';
+                },
+              }, '👁 Показать ответ') : null,
+              hidden ? h('div', { class: 'teacherq__key', hidden: true },
+                h('strong', null, 'Ответ: '), hidden.correct_text || '—',
+                hidden.explanation ? h('p', { class: 'teacherq__why' }, hidden.explanation) : null) : null,
               h('div', { class: 'answered' },
                 h('div', { class: 'answered__label' },
                   'Ответили: ', h('b', { id: 't-answered' },

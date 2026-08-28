@@ -48,6 +48,7 @@ async function resumeOrLanding() {
 
 function wireNet() {
   net.on('state', (msg) => {
+    if (msg.time_over === false) bellPlayed = false;   // учитель добавил время
     state = msg;
     render();
   });
@@ -66,7 +67,16 @@ function wireNet() {
   });
   net.on('answer_result', (msg) => {
     if (!activeQuestion) return;
-    if (msg.ok === false) return;
+    if (msg.ok === false) {
+      // сервер отказал — карточку надо вернуть ученику, иначе он молча выпадает
+      if (msg.reason === 'no_team') {
+        activeQuestion.unlock();
+        toast('Вы ещё не в команде — подойдите к учителю', 'warn');
+      } else if (msg.reason === 'closed' || msg.reason === 'stale') {
+        toast('Задание уже закрыто', 'warn');
+      }
+      return;
+    }
     activeQuestion.showResult(msg);
     if (msg.correct) {
       sfx.correct();
@@ -88,7 +98,10 @@ function wireNet() {
   });
   net.on('error', (msg) => {
     toast(msg.message || 'Ошибка', 'error');
-    if (msg.code === 'no_session') showJoin('', msg.message);
+    if (msg.code === 'no_session') {
+      net.close();          // иначе форма ввода перерисовывается каждые 4 секунды
+      showJoin('', msg.message);
+    }
   });
   net.on('status', (s) => {
     document.body.dataset.net = s;
@@ -193,6 +206,9 @@ function hud() {
 
 function updateTimers() {
   if (!state) return;
+  const veil = document.getElementById('pauseveil');
+  if (veil) veil.hidden = !state.paused;
+  if (state.paused) return;   // время стоит: учитель объясняет
   const clock = document.getElementById('hud-clock');
   if (clock) {
     clock.textContent = mmss(state.session_left);
@@ -208,8 +224,8 @@ function updateTimers() {
     const p = Math.max(0, Math.min(1, left / total));
     ring.style.setProperty('--p', p);
     ring.dataset.left = Math.ceil(left / 1000);
-    ring.classList.toggle('is-warn', p <= 0.33 && p > 0.15);
-    ring.classList.toggle('is-danger', p <= 0.15);
+    ring.classList.toggle('is-warn', p <= 0.2 && p > 0.1);
+    ring.classList.toggle('is-danger', p <= 0.1);
     const num = ring.querySelector('.qtimer__num');
     if (num) num.textContent = Math.ceil(left / 1000);
   }
@@ -296,10 +312,7 @@ function renderLobby() {
       h('div', { class: 'wait__count' }, players(state.online)),
       h('div', { class: 'mini', id: 'mini-board' }, miniBoardRows()),
       ghostButton('Сменить команду', () => {
-        net.send({ t: 'pick_team', team_id: '' });
-        state.me.team_id = null;
-        screenKey = '';
-        renderTeamPick();
+        net.send({ t: 'pick_team', team_id: '' });   // экран сменит ответ сервера
       }),
       h('p', { class: 'hint' }, 'Игру начнёт учитель')),
   );
@@ -598,4 +611,9 @@ export function mountChrome() {
   document.body.append(h('div', {
     class: 'netbanner', id: 'netbanner', hidden: true,
   }, '⚠ Связь потеряна. Переподключаемся — ваш прогресс сохранён'));
+  document.body.append(h('div', { class: 'pauseveil', id: 'pauseveil', hidden: true },
+    h('div', { class: 'pauseveil__card' },
+      h('div', { class: 'pauseveil__icon' }, '⏸'),
+      h('div', { class: 'pauseveil__title' }, 'ПАУЗА'),
+      h('div', { class: 'pauseveil__text' }, 'Учитель остановил игру. Время не идёт'))));
 }
