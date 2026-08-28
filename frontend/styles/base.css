@@ -130,6 +130,7 @@ button, input { font: inherit; color: inherit; }
   font-weight: 700;
   color: var(--ink-70);
   white-space: nowrap;
+  max-width: 100%;
 }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
@@ -503,6 +504,8 @@ button, input { font: inherit; color: inherit; }
 
 @media (max-width: 767px) {
   body { font-size: 16px; }
+  /* длинные названия миссий не должны уезжать за край телефона */
+  .chip { white-space: normal; }
   .screen { padding: 14px 12px 92px; gap: 14px; }
   .hud { padding: 8px 10px; gap: 6px; }
   .hud__value { font-size: 17px; }
