@@ -307,7 +307,7 @@ export function knowledgeDay() {
             font-size="78" font-weight="700" fill="#1B3A6B">С Днём</text>
       <text x="322" y="276" text-anchor="middle" font-family="Caveat, Segoe Script, cursive"
             font-size="78" font-weight="700" fill="#1B3A6B">знаний!</text>
-      <path d="M396 272 C 456 254 512 262 550 248" stroke="#E0A93B" stroke-width="6"
+      <path d="M392 288 C 428 278 462 282 486 274" stroke="#E0A93B" stroke-width="6"
             fill="none" stroke-linecap="round"/>
       <g fill="#E0A93B">
         <path d="M474 292 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4 Z"/>

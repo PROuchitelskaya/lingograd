@@ -6,7 +6,7 @@ import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
 import * as net from './net.js';
 import * as fx from './fx.js';
 import { cityScene, chaosVillain, chaosTower, bridge, schoolBell, crystal, cityMap,
-         keeperBig } from './art.js';
+         knowledgeDay, keeperBig } from './art.js';
 import { buildQuestion, revealBlock } from './question.js';
 
 const root = document.getElementById('app');
