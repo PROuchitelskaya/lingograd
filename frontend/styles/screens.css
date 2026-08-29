@@ -1310,12 +1310,34 @@
   .teacherq__answers { grid-template-columns: 1fr; }
   .match { grid-template-columns: 1fr 1fr; gap: 8px; }
   .match__item { font-size: 14px; padding: 10px; min-height: 56px; }
-  .mapwrap { min-height: auto; }
-  .mapwrap__bg { display: none; }
-  .mapnodes { display: flex; flex-direction: column; gap: 8px; padding: 10px; min-height: auto; }
-  .mapnode { position: static; width: 100%; flex-direction: row; gap: 10px; text-align: left; justify-content: flex-start; }
-  .mapnode--active { transform: none; }
-  .mapnode__title { font-size: 15px; }
+  /* Карта на телефоне — настоящая карта, а не список: ученик видит тот же
+     город, что на проекторе. Карточки районов ужаты, чтобы пять штук
+     разошлись по кадру и не наехали друг на друга. */
+  .mapwrap { min-height: 48vh; }
+  .mapnodes { min-height: 48vh; }
+  .mapnode {
+    width: 30%;
+    min-width: 100px;
+    max-width: 118px;
+    padding: 5px 4px;
+    gap: 0;
+    border-radius: var(--r-sm);
+  }
+  .mapnode__icon { font-size: 19px; }
+  .mapnode__title { font-size: 10px; line-height: 1.05; }
+  .mapnode__state { font-size: 9px; letter-spacing: 0; }
+  /* пять точек по кадру: два столбца по краям и один посередине,
+     между ними зазор — карточки не должны касаться углами */
+  .mapnode--0 { left: 1%;  top: 3%; }
+  .mapnode--1 { left: 1%;  top: 63%; }
+  .mapnode--2 { left: 35%; top: 33%; }
+  .mapnode--3 { right: 1%; top: 63%; }
+  .mapnode--4 { right: 1%; top: 3%; }
+  .mapnode--active { transform: scale(1.04); }
+  .mapfoot { gap: 8px; }
+  /* на карте счёт команд дублирует HUD — оставляем только строки, без полей */
+  .screen--map .mini { padding: 8px 10px; margin-top: 8px; }
+  .screen--map .mini__row { font-size: 13px; }
   .qtop { grid-template-columns: 1fr auto; }
   .qtop__no { display: none; }
   .results__row { grid-template-columns: 36px 28px 1fr auto; padding: 12px 14px; }
