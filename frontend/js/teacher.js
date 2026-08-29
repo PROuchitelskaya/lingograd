@@ -207,18 +207,23 @@ function boardRows(lobby = false) {
 
 // --- экран подключения ----------------------------------------------------
 
+/** Адрес для входа учеников — он же в QR-коде на всех экранах. */
+function joinUrl() {
+  return session?.join_url || `${location.origin}/?c=${state.code}`;
+}
+
 function renderConnect() {
-  const joinUrl = session?.join_url || `${location.origin}/?c=${state.code}`;
+  const url = joinUrl();
   const node = h('div', { class: 'screen screen--connect' },
     h('div', { class: 'connect' },
       h('div', { class: 'connect__left' },
         h('h1', { class: 'display' }, 'ПОДКЛЮЧАЙТЕСЬ'),
-        h('div', { class: 'qr', html: toSVG(joinUrl, { size: 300 }) }),
+        h('div', { class: 'qr', html: toSVG(url, { size: 300 }) }),
         h('div', { class: 'connect__code' },
           h('span', { class: 'connect__code-label' }, 'КОД:'),
           h('span', { class: 'connect__code-value' }, state.code)),
         h('p', { class: 'muted' }, 'Откройте игру на телефоне и введите код'),
-        h('p', { class: 'connect__url' }, joinUrl)),
+        h('p', { class: 'connect__url' }, url)),
 
       h('div', { class: 'connect__right' },
         h('div', { class: 'connect__stat' },
@@ -485,6 +490,16 @@ function renderLive() {
       h('aside', { class: 'live__side' },
         h('div', { class: 'side__title' }, 'КОМАНДЫ'),
         h('div', { class: 'tboard', id: 't-board' }, boardRows()),
+
+        // Опоздавшие приходят посреди урока, а код с QR был только на первом
+        // экране. Держим маленький код на виду всю игру: вошедший сразу
+        // попадает на текущее задание, команду ему сервер подберёт сам.
+        h('div', { class: 'latejoin' },
+          h('div', { class: 'latejoin__qr', html: toSVG(joinUrl(), { size: 132 }) }),
+          h('div', { class: 'latejoin__text' },
+            h('div', { class: 'latejoin__label' }, 'ОПОЗДАЛ?'),
+            h('div', { class: 'latejoin__code' }, state.code),
+            h('div', { class: 'latejoin__hint' }, 'Отсканируй и включайся'))),
         h('div', { class: 'side__title' }, 'УПРАВЛЕНИЕ'),
         h('div', { class: 'controls' },
           h('button', {
