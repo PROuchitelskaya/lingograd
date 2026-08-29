@@ -510,6 +510,88 @@ export function cityMap() {
 </svg>`;
 }
 
+/** Знаки районов. Системные эмодзи выглядят по-разному на айфоне, андроиде
+ *  и в Windows и выбиваются из рисовки игры, поэтому у каждого района
+ *  свой нарисованный знак — одинаковый на всех устройствах. */
+/** Метка команды: тот же цвет, что у полос и карточек, но нарисованный —
+ *  системные кружки-эмодзи на каждом устройстве свои. */
+export function teamDot(color = '#3155D9') {
+  return `
+<svg class="tdot" viewBox="0 0 24 24" aria-hidden="true">
+  <circle cx="12" cy="12" r="10" fill="${color}"/>
+  <path d="M6 9 a8 8 0 0 1 11 -3" stroke="#FFFFFF" stroke-width="2.6"
+        fill="none" stroke-linecap="round" opacity=".45"/>
+</svg>`;
+}
+
+export function districtIcon(district = 'words') {
+  const art = {
+    // стопка книг с закладкой
+    words: `
+      <rect x="7" y="31" width="34" height="8" rx="2.5" fill="#C2452E"/>
+      <rect x="7" y="31" width="5" height="8" fill="#9E3423"/>
+      <rect x="5" y="22" width="38" height="8" rx="2.5" fill="#E8DCC0"/>
+      <rect x="5" y="22" width="5" height="8" fill="#CBBB97"/>
+      <rect x="9" y="13" width="30" height="8" rx="2.5" fill="#3155D9"/>
+      <rect x="9" y="13" width="5" height="8" fill="#22409E"/>
+      <path d="M30 13 h6 v11 l-3 -3 -3 3 Z" fill="#FFC94A"/>`,
+
+    // колба с пузырьками
+    morphology: `
+      <path d="M20 7 h8 v12 l9 16 a4 4 0 0 1 -3.4 6 H14.4 A4 4 0 0 1 11 35 l9 -16 Z"
+            fill="#EAF2FF" stroke="#7357C8" stroke-width="2.6" stroke-linejoin="round"/>
+      <path d="M14.6 30 h18.8 l3 5.4 a2 2 0 0 1 -1.7 3 H13.3 a2 2 0 0 1 -1.7 -3 Z"
+            fill="#7357C8"/>
+      <rect x="18" y="4" width="12" height="4.4" rx="2.2" fill="#3155D9"/>
+      <circle cx="22" cy="25" r="2.6" fill="#55B77A"/>
+      <circle cx="28" cy="21" r="1.8" fill="#3155D9"/>
+      <circle cx="27" cy="28" r="1.4" fill="#55B77A"/>`,
+
+    // арочный мост с фонарём
+    syntax: `
+      <path d="M4 30 h40 v4 H4 Z" fill="#F28C38"/>
+      <path d="M9 34 a8 8 0 0 1 15 0 Z" fill="#F28C38"/>
+      <path d="M25 34 a8 8 0 0 1 15 0 Z" fill="#F28C38"/>
+      <rect x="4" y="34" width="40" height="5" rx="1.6" fill="#D9752A"/>
+      <path d="M12 30 v-9 q0 -4 4 -4 t3 4" stroke="#20243A" stroke-width="2.6"
+            fill="none" stroke-linecap="round"/>
+      <circle cx="19" cy="21" r="3.4" fill="#FFC94A"/>
+      <path d="M32 30 v-7" stroke="#20243A" stroke-width="2.6" stroke-linecap="round"/>
+      <circle cx="32" cy="21" r="3" fill="#FFC94A"/>`,
+
+    // свиток со звёздами
+    archive: `
+      <path d="M12 8 h22 a5 5 0 0 1 5 5 v27 a4 4 0 0 1 -4 4 H13 a5 5 0 0 1 -5 -5 V13
+               a5 5 0 0 1 4 -5 Z" fill="#2A3576"/>
+      <path d="M12 8 a5 5 0 0 0 0 10 h4 V8 Z" fill="#1B2050"/>
+      <path d="M39 40 a4 4 0 0 1 -4 4 h-3 a4 4 0 0 0 4 -4 Z" fill="#1B2050"/>
+      <g stroke="#FFC94A" stroke-width="2.4" stroke-linecap="round" opacity=".85">
+        <path d="M20 17 h13"/><path d="M20 24 h13"/><path d="M20 31 h9"/>
+      </g>
+      <path d="M34 6 l1.5 3.4 3.5 1.4 -3.5 1.4 L34 16 l-1.5 -3.8 -3.5 -1.4 3.5 -1.4 Z"
+            fill="#FFD979"/>`,
+
+    // башня из блоков в зареве
+    tower: `
+      <ellipse cx="24" cy="24" rx="21" ry="20" fill="#E85B5B" opacity=".18"/>
+      <rect x="14" y="35" width="20" height="7" rx="2" fill="#20243A"/>
+      <rect x="16" y="27" width="16" height="7" rx="2" fill="#3B2A70"/>
+      <rect x="13" y="19" width="21" height="7" rx="2" fill="#20243A"/>
+      <rect x="17" y="11" width="14" height="7" rx="2" fill="#5B2E63"/>
+      <path d="M31 9 L36 3 L33 11" stroke="#FF2E45" stroke-width="2.2" fill="none"
+            stroke-linecap="round"/>
+      <ellipse cx="24" cy="43" rx="13" ry="2.6" fill="#20243A" opacity=".35"/>`,
+
+    // район восстановлен
+    done: `
+      <circle cx="24" cy="24" r="18" fill="#55B77A"/>
+      <path d="M15 24.5 l6.5 6.5 L34 18" stroke="#FFF8ED" stroke-width="4.4"
+            fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
+  };
+
+  return `<svg class="dicon" viewBox="0 0 48 48" aria-hidden="true">${art[district] || art.words}</svg>`;
+}
+
 export function zoneBg(district = 'words') {
   const shells = {
     words: `

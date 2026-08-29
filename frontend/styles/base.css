@@ -331,7 +331,9 @@ button, input { font: inherit; color: inherit; }
 
 .hud__score.is-bumped, #hud-score.is-bumped { transform: scale(1.12); }
 .hud__crystal { display: flex; }
-.hud__team { font-size: 13px; font-weight: 700; color: var(--ink-70); }
+.hud__team { font-size: 13px; font-weight: 700; color: var(--ink-70);
+             display: flex; align-items: center; gap: 6px; }
+.hud__dot { width: 16px; height: 16px; flex: none; line-height: 0; }
 
 .hud__timer {
   display: flex;

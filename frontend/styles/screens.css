@@ -108,7 +108,7 @@
 .teamcard:focus-visible { transform: translateY(-4px); border-color: var(--team); box-shadow: var(--sh-2); }
 @media (hover: hover) and (pointer: fine) { .teamcard:hover { transform: translateY(-4px); border-color: var(--team); box-shadow: var(--sh-2); } }
 .teamcard:active { transform: scale(.98); }
-.teamcard__emoji { font-size: 40px; }
+.teamcard__emoji { width: 44px; height: 44px; margin: 0 auto; line-height: 0; }
 .teamcard__name { font-size: 20px; font-weight: 800; letter-spacing: .02em; }
 .teamcard__motto { font-size: 14px; color: var(--ink-55); }
 .teamcard__count { margin-top: auto; font-size: 13px; font-weight: 700; color: var(--ink-70); }
@@ -334,7 +334,7 @@
 .mapnode--3 { right: 26%; top: 58%; }
 .mapnode--4 { right: 2%;  top: 14%; }
 
-.mapnode__icon { font-size: 30px; }
+.mapnode__icon { width: 34px; height: 34px; display: block; }
 .mapnode__title { font-size: 13px; font-weight: 800; line-height: 1.15; }
 .mapnode__state { font-size: 11px; font-weight: 700; color: var(--ink-55); text-transform: uppercase; letter-spacing: .04em; }
 
@@ -375,7 +375,7 @@
   box-shadow: var(--sh-2);
 }
 
-.intro__icon { font-size: 66px; }
+.intro__icon { width: 72px; height: 72px; margin: 0 auto; }
 .intro__label { font-size: 13px; font-weight: 800; letter-spacing: .18em; color: var(--z-label, var(--blue)); }
 .intro__meta { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
 
@@ -434,7 +434,7 @@
 }
 
 .qtop__where { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; color: var(--ink-70); }
-.qtop__icon { font-size: 20px; }
+.qtop__icon { width: 24px; height: 24px; flex: none; display: block; }
 .qtop__no { font-size: 13px; font-weight: 800; letter-spacing: .1em; color: var(--ink-55); }
 
 .qtimer {
@@ -845,7 +845,7 @@
 
 .screen--done { justify-content: center; }
 .done { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
-.done__icon { font-size: 64px; }
+.done__icon { width: 68px; height: 68px; margin: 0 auto; }
 .done__progress { font-size: 15px; font-weight: 700; color: var(--ink-70); }
 
 .board { width: min(460px, 100%); display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
@@ -982,7 +982,7 @@
 }
 
 .results__place { font-size: 22px; font-weight: 800; text-align: center; }
-.results__emoji { font-size: 24px; }
+.results__emoji { width: 26px; height: 26px; line-height: 0; }
 .results__name { font-size: 18px; font-weight: 800; }
 .results__score { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--blue); }
 .results__acc { font-size: 14px; color: var(--ink-70); }
@@ -1014,7 +1014,9 @@
 
 .award__emoji { font-size: 34px; }
 .award__title { font-size: 15px; font-weight: 800; letter-spacing: .04em; }
-.award__team { font-size: 15px; font-weight: 700; color: var(--blue); }
+.award__team { font-size: 15px; font-weight: 700; color: var(--blue);
+              display: flex; align-items: center; gap: 6px; }
+.award__dot { width: 16px; height: 16px; flex: none; line-height: 0; }
 .award__value { font-size: 13px; color: var(--ink-55); }
 .awards__foot { text-align: center; display: flex; flex-direction: column; gap: 6px; }
 .awards__foot .lead { font-weight: 800; color: var(--orange-ink); letter-spacing: .04em; }
@@ -1113,7 +1115,16 @@
 }
 
 .livebar__brand { font-weight: 800; letter-spacing: .1em; color: var(--blue); }
-.livebar__phase { font-weight: 700; color: var(--ink-70); font-size: 15px; }
+.livebar__phase {
+  font-weight: 700;
+  color: var(--ink-70);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.livebar__icon { width: 24px; height: 24px; flex: none; }
 .livebar__clock { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--blue); }
 .livebar__clock.is-warn { color: var(--orange); }
 .livebar__clock.is-danger { color: var(--red); animation: pulse 1s infinite; }
@@ -1282,7 +1293,7 @@
 .analytics__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
 
 .anal__card { background: var(--ink-06); border-radius: var(--r-md); padding: 12px; text-align: center; }
-.anal__icon { font-size: 22px; }
+.anal__icon { width: 26px; height: 26px; margin: 0 auto; }
 .anal__title { font-size: 13px; font-weight: 800; color: var(--ink-55); line-height: 1.2; overflow-wrap: anywhere; }
 .anal__value { font-size: 26px; font-weight: 800; color: var(--blue); }
 .anal__sub { font-size: 13px; color: var(--ink-55); }
@@ -1335,7 +1346,7 @@
     gap: 0;
     border-radius: var(--r-sm);
   }
-  .mapnode__icon { font-size: 19px; }
+  .mapnode__icon { width: 22px; height: 22px; }
   .mapnode__title { font-size: 10px; line-height: 1.05; }
   .mapnode__state { font-size: 9px; letter-spacing: 0; }
   /* пять точек по кадру: два столбца по краям и один посередине,
@@ -1567,10 +1578,10 @@
 
 .teacherq--map, .teacherq--intro { display: flex; flex-direction: column; gap: 20px; }
 .teacherq--map .mapwrap { min-height: 380px; }
-.teacherq--intro .intro__icon { font-size: 64px; }
+.teacherq--intro .intro__icon { width: 68px; height: 68px; }
 .teacherq--intro .display { font-size: clamp(32px, 4vw, 52px); }
 
-.teacherq--phase .done__icon { font-size: 64px; }
+.teacherq--phase .done__icon { width: 68px; height: 68px; margin: 0 auto; }
 .teacherq--phase .board { width: min(560px, 100%); margin: 0 auto; }
 .reveal--teacher { width: 100%; }
 .reveal--teacher .reveal__answer { font-size: clamp(24px, 3vw, 38px); }
@@ -1609,6 +1620,21 @@
 /* на проекторе фон приглушён сильнее: там поверх него живут белые панели */
 .screen--live .zonebg { opacity: .38; }
 .screen--live.zone-text .zonebg, .screen--live.zone-chaos .zonebg { opacity: .7; }
+
+/* Метка команды вместо цветного эмодзи: одинаковая на всех устройствах. */
+.tdot { width: 100%; height: 100%; display: block; }
+.mini__emoji, .board__emoji, .tboard__emoji,
+.results__emoji, .teamcard__emoji, .winner__dot { line-height: 0; }
+.mini__emoji { width: 16px; height: 16px; }
+.board__emoji { width: 22px; height: 22px; }
+.tboard__emoji { width: 22px; height: 22px; }
+.winner__dot { width: 30px; height: 30px; flex: none; }
+.winner__name { display: flex; align-items: center; gap: 12px; }
+
+/* Знак района: одинаковый на любом устройстве, в отличие от системных эмодзи. */
+.dicon { width: 100%; height: 100%; display: block; }
+.mapnode__icon, .intro__icon, .qtop__icon,
+.done__icon, .anal__icon, .livebar__icon { line-height: 0; }
 
 /* ------------------------------------------------------------- ПАУЗА §43 */
 

@@ -6,7 +6,8 @@ import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
 import * as net from './net.js';
 import * as fx from './fx.js';
 import { toSVG } from './qr.js';
-import { chaosVillain, chaosTower, cityMap, schoolBell, knowledgeDay, zoneBg, keeper } from './art.js';
+import { chaosVillain, chaosTower, cityMap, schoolBell, knowledgeDay, zoneBg,
+         districtIcon, teamDot, keeper } from './art.js';
 
 const root = document.getElementById('app');
 let state = null;
@@ -189,14 +190,14 @@ function updateLive() {
 function boardRows(lobby = false) {
   if (lobby) {
     return state.teams.map((t) => h('div', { class: 'tboard__row tboard__row--lobby' },
-      h('span', { class: 'tboard__emoji' }, t.emoji),
+      h('span', { class: 'tboard__emoji', html: teamDot(t.color) }),
       h('span', { class: 'tboard__name' }, t.name),
       h('span', { class: 'tboard__who' },
         t.members ? players(t.members) : 'пока никого')));
   }
   const max = Math.max(1, ...state.teams.map((t) => t.score));
   return state.teams.map((t) => h('div', { class: 'tboard__row' },
-    h('span', { class: 'tboard__emoji' }, t.emoji),
+    h('span', { class: 'tboard__emoji', html: teamDot(t.color) }),
     h('span', { class: 'tboard__name' }, t.name),
     h('span', { class: 'tboard__bar' },
       h('span', { class: 'tboard__fill', style: { width: `${(t.score / max) * 100}%`, background: t.color } })),
@@ -349,7 +350,7 @@ function teacherPhase(m, phaseLabel) {
           (state.map || []).map((node, i) => h('div', {
             class: `mapnode mapnode--${node.state} mapnode--${i}`,
           },
-            h('span', { class: 'mapnode__icon' }, node.icon),
+            h('span', { class: 'mapnode__icon', html: districtIcon(node.district) }),
             h('span', { class: 'mapnode__title' }, node.title),
             h('span', { class: 'mapnode__state' },
               node.state === 'done' ? '✓ восстановлен'
@@ -361,7 +362,7 @@ function teacherPhase(m, phaseLabel) {
   if (p === 'mission_intro') {
     return h('div', { class: 'teacherq teacherq--intro' },
       h('div', { class: 'intro' },
-        h('div', { class: 'intro__icon' }, m.icon),
+        h('div', { class: 'intro__icon', html: districtIcon(m.district) }),
         h('div', { class: 'intro__label' }, `МИССИЯ ${m.index + 1} ИЗ ${m.of}`),
         h('h1', { class: 'display' }, m.title),
         h('p', { class: 'lead' }, m.subtitle),
@@ -376,7 +377,7 @@ function teacherPhase(m, phaseLabel) {
     const rep = state.mission_report || {};
     return h('div', { class: 'teacherq teacherq--phase' },
       h('div', { class: 'done' },
-        h('div', { class: 'done__icon' }, rep.icon || '✅'),
+        h('div', { class: 'done__icon', html: districtIcon('done') }),
         h('h1', { class: 'display' }, 'РАЙОН ВОССТАНОВЛЕН'),
         h('p', { class: 'lead' }, rep.title || ''),
         h('div', { class: 'done__progress' },
@@ -384,7 +385,7 @@ function teacherPhase(m, phaseLabel) {
         h('div', { class: 'board' },
           (rep.teams || []).map((t, i) => h('div', { class: 'board__row' },
             h('span', { class: 'board__place' }, i + 1),
-            h('span', { class: 'board__emoji' }, t.emoji),
+            h('span', { class: 'board__emoji', html: teamDot(t.color) }),
             h('span', { class: 'board__name' }, t.name),
             h('span', { class: 'board__score' }, t.score))))));
   }
@@ -436,7 +437,9 @@ function renderLive() {
     h('div', { class: 'zonebg', html: zoneBg(m.district) }),
     h('header', { class: 'livebar' },
       h('div', { class: 'livebar__brand' }, 'ЛИНГОГРАД'),
-      h('div', { class: 'livebar__phase' }, `${m.icon} ${m.title} · ${phaseLabel}`),
+      h('div', { class: 'livebar__phase' },
+        h('span', { class: 'livebar__icon', html: districtIcon(m.district) }),
+        h('span', null, `${m.title} · ${phaseLabel}`)),
       h('div', { class: 'livebar__clock', id: 't-clock' }, mmss(state.session_left))),
 
     h('div', { class: 'live' },
@@ -531,7 +534,9 @@ function winnerCard(top) {
     h('div', { class: 'winner__medal' }, '🥇'),
     h('div', { class: 'winner__body' },
       h('div', { class: 'winner__label' }, 'ПОБЕДИТЕЛЬ'),
-      h('div', { class: 'winner__name' }, `${top.emoji} ${top.name}`)),
+      h('div', { class: 'winner__name' },
+        h('span', { class: 'winner__dot', html: teamDot(top.color) }),
+        h('span', null, top.name))),
     h('div', { class: 'winner__nums' },
       h('div', { class: 'winner__score' }, `${top.score}`),
       h('div', { class: 'winner__cap' }, `кристаллов · ${Math.round(top.accuracy * 100)}% точности`)));
@@ -562,7 +567,7 @@ function renderFinal() {
               style: { '--team': t.color },
             },
               h('span', { class: 'results__place' }, `${t.place}`),
-              h('span', { class: 'results__emoji' }, t.emoji),
+              h('span', { class: 'results__emoji', html: teamDot(t.color) }),
               h('span', { class: 'results__name' }, t.name),
               h('span', { class: 'results__score' }, `${t.score}`),
               h('span', { class: 'results__acc' }, `${Math.round(t.accuracy * 100)}%`))))),
@@ -574,7 +579,9 @@ function renderFinal() {
               h('span', { class: 'award__emoji' }, a.emoji),
               h('div', { class: 'award__body' },
                 h('div', { class: 'award__title' }, a.title),
-                h('div', { class: 'award__team' }, `${a.team.emoji} ${a.team.name}`),
+                h('div', { class: 'award__team' },
+                  h('span', { class: 'award__dot', html: teamDot(a.team.color) }),
+                  h('span', null, a.team.name)),
                 h('div', { class: 'award__value' }, a.value)))))),
       ),
 
@@ -608,7 +615,7 @@ async function loadAnalytics() {
     mount(box,
       h('div', { class: 'analytics__grid' },
         Object.entries(data.by_district || {}).map(([id, d]) => h('div', { class: 'anal__card' },
-          h('div', { class: 'anal__icon' }, d.icon),
+          h('div', { class: 'anal__icon', html: districtIcon(id) }),
           h('div', { class: 'anal__title' }, d.title),
           h('div', { class: 'anal__value' }, `${Math.round(d.accuracy * 100)}%`),
           h('div', { class: 'anal__sub' }, `${d.correct} из ${d.answered} ответов`)))),

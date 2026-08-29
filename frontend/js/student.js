@@ -6,7 +6,7 @@ import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
 import * as net from './net.js';
 import * as fx from './fx.js';
 import { cityScene, chaosVillain, chaosTower, bridge, schoolBell, crystal, cityMap,
-         knowledgeDay, zoneBg, keeperBig } from './art.js';
+         knowledgeDay, zoneBg, districtIcon, teamDot, keeperBig } from './art.js';
 import { buildQuestion, revealBlock } from './question.js';
 
 const root = document.getElementById('app');
@@ -190,7 +190,9 @@ function hud() {
     h('div', { class: 'hud__score', id: 'hud-score-box' },
       h('span', { class: 'hud__crystal', html: crystal(20) }),
       h('span', { class: 'hud__value', id: 'hud-score' }, String(team?.score ?? 0)),
-      h('span', { class: 'hud__team' }, team ? `${team.emoji} ${team.name}` : '')),
+      team ? h('span', { class: 'hud__team' },
+        h('span', { class: 'hud__dot', html: teamDot(team.color) }),
+        h('span', null, team.name)) : h('span', { class: 'hud__team' })),
     h('div', { class: 'hud__timer', id: 'hud-timer' },
       h('span', { class: 'hud__label' }, '⏱'),
       h('span', { class: 'hud__value', id: 'hud-clock' }, mmss(state.session_left))),
@@ -249,7 +251,7 @@ function miniBoardRows() {
   return state.teams.map((t) => h('div', {
     class: `mini__row ${t.id === state.me?.team_id ? 'is-me' : ''}`,
   },
-    h('span', { class: 'mini__emoji' }, t.emoji),
+    h('span', { class: 'mini__emoji', html: teamDot(t.color) }),
     h('span', { class: 'mini__name' }, t.name),
     h('span', { class: 'mini__score' }, t.score)));
 }
@@ -330,7 +332,7 @@ function renderTeamPick() {
                     net.send({ t: 'pick_team', team_id: t.id });
         },
       },
-        h('span', { class: 'teamcard__emoji' }, t.emoji),
+        h('span', { class: 'teamcard__emoji', html: teamDot(t.color) }),
         h('span', { class: 'teamcard__name' }, t.name),
         h('span', { class: 'teamcard__motto' }, t.motto),
         h('span', { class: 'teamcard__count' }, players(t.members))))),
@@ -386,7 +388,7 @@ function renderMap() {
         state.map.map((m, i) => h('div', {
           class: `mapnode mapnode--${m.state} mapnode--${i}`,
         },
-          h('span', { class: 'mapnode__icon' }, m.icon),
+          h('span', { class: 'mapnode__icon', html: districtIcon(m.district) }),
           h('span', { class: 'mapnode__title' }, m.title),
           h('span', { class: 'mapnode__state' },
             m.state === 'done' ? '✓ восстановлен'
@@ -404,7 +406,7 @@ function renderMissionIntro() {
     h('div', { class: 'zonebg', html: zoneBg(m.district) }),
     hud(),
     h('div', { class: 'intro' },
-      h('div', { class: 'intro__icon' }, m.icon),
+      h('div', { class: 'intro__icon', html: districtIcon(m.district) }),
       h('div', { class: 'intro__label' }, `МИССИЯ ${m.index + 1} ИЗ ${m.of}`),
       h('h1', { class: 'display' }, m.title),
       h('p', { class: 'lead' }, m.subtitle),
@@ -437,7 +439,7 @@ function renderQuestion() {
     hud(),
     h('div', { class: 'qtop' },
       h('div', { class: 'qtop__where' },
-        h('span', { class: 'qtop__icon' }, m.icon),
+        h('span', { class: 'qtop__icon', html: districtIcon(m.district) }),
         h('span', null, m.title)),
       h('div', { class: 'qtop__no' }, `ЗАДАНИЕ ${String(state.global_index).padStart(2, '0')}`),
       h('div', { class: 'qtimer', id: 'q-timer' },
@@ -513,7 +515,7 @@ function renderMissionComplete() {
     h('div', { class: 'zonebg', html: zoneBg(rep.district || state.mission?.district) }),
     hud(),
     h('div', { class: 'done' },
-      h('div', { class: 'done__icon' }, rep.icon || '✅'),
+      h('div', { class: 'done__icon', html: districtIcon('done') }),
       h('h1', { class: 'display' }, 'РАЙОН ВОССТАНОВЛЕН'),
       h('p', { class: 'lead' }, rep.title || ''),
       h('div', { class: 'done__progress' },
@@ -522,7 +524,7 @@ function renderMissionComplete() {
       h('div', { class: 'board' },
         (rep.teams || []).map((t, i) => h('div', { class: 'board__row' },
           h('span', { class: 'board__place' }, i + 1),
-          h('span', { class: 'board__emoji' }, t.emoji),
+          h('span', { class: 'board__emoji', html: teamDot(t.color) }),
           h('span', { class: 'board__name' }, t.name),
           h('span', { class: 'board__score' }, t.score)))),
       h('div', { class: 'phase-bar' }, h('span', { id: 'phase-bar' }))),
@@ -566,7 +568,7 @@ function renderResults() {
         style: { '--team': t.color },
       },
         h('span', { class: 'results__place' }, isWinner ? '🥇' : `${t.place}`),
-        h('span', { class: 'results__emoji' }, t.emoji),
+        h('span', { class: 'results__emoji', html: teamDot(t.color) }),
         h('span', { class: 'results__name' }, t.name),
         h('span', { class: 'results__score' }, `${t.score}`));
       list.prepend(row);
@@ -588,7 +590,9 @@ function renderAwards() {
         h('span', { class: 'award__emoji' }, a.emoji),
         h('div', null,
           h('div', { class: 'award__title' }, a.title),
-          h('div', { class: 'award__team' }, `${a.team.emoji} ${a.team.name}`),
+          h('div', { class: 'award__team' },
+            h('span', { class: 'award__dot', html: teamDot(a.team.color) }),
+            h('span', null, a.team.name)),
           h('div', { class: 'award__value' }, a.value))))),
     h('div', { class: 'awards__foot' },
       h('p', { class: 'lead' }, 'ПЕРВЫЙ УРОК — ПЕРВАЯ ПОБЕДА!'),
