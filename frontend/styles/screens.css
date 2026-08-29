@@ -1521,6 +1521,35 @@
 .reveal--teacher { width: 100%; }
 .reveal--teacher .reveal__answer { font-size: clamp(24px, 3vw, 38px); }
 
+/* Фон района лежит под содержимым экрана: приглушённый, чтобы белая карточка
+   задания читалась поверх него с задней парты. */
+.screen--intro, .screen--question, .screen--reveal, .screen--done,
+.screen--live { position: relative; }
+
+.zonebg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  opacity: .55;
+  pointer-events: none;
+}
+.zonebg__svg { width: 100%; height: 100%; display: block; }
+
+/* тёмные районы уже рисуют свой ночной фон — там подложка ярче */
+.zone-text .zonebg, .zone-chaos .zonebg { opacity: .9; }
+
+.screen--intro > *:not(.zonebg),
+.screen--question > *:not(.zonebg),
+.screen--reveal > *:not(.zonebg),
+.screen--done > *:not(.zonebg),
+.screen--live > *:not(.zonebg) { position: relative; z-index: 1; }
+
+/* на проекторе фон приглушён сильнее: там поверх него живут белые панели */
+.screen--live .zonebg { opacity: .38; }
+.screen--live.zone-text .zonebg, .screen--live.zone-chaos .zonebg { opacity: .7; }
+
 /* ------------------------------------------------------------- ПАУЗА §43 */
 
 .pauseveil {

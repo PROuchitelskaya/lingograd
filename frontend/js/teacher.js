@@ -6,7 +6,7 @@ import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
 import * as net from './net.js';
 import * as fx from './fx.js';
 import { toSVG } from './qr.js';
-import { chaosVillain, chaosTower, cityMap, schoolBell, knowledgeDay, keeper } from './art.js';
+import { chaosVillain, chaosTower, cityMap, schoolBell, knowledgeDay, zoneBg, keeper } from './art.js';
 
 const root = document.getElementById('app');
 let state = null;
@@ -424,6 +424,7 @@ function renderLive() {
   const hidden = state.phase === 'question' ? state.teacher_answer : null;
 
   const node = h('div', { class: `screen screen--live ${m.zone}` },
+    h('div', { class: 'zonebg', html: zoneBg(m.district) }),
     h('header', { class: 'livebar' },
       h('div', { class: 'livebar__brand' }, 'ЛИНГОГРАД'),
       h('div', { class: 'livebar__phase' }, `${m.icon} ${m.title} · ${phaseLabel}`),

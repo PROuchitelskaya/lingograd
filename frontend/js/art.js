@@ -303,15 +303,13 @@ export function knowledgeDay() {
     </g>
 
     <g class="kday__title">
-      <text x="336" y="200" text-anchor="middle" font-family="Caveat, Segoe Script, cursive"
+      <text x="336" y="150" text-anchor="middle" font-family="Caveat, Segoe Script, cursive"
             font-size="78" font-weight="700" fill="#1B3A6B">С Днём</text>
-      <text x="322" y="276" text-anchor="middle" font-family="Caveat, Segoe Script, cursive"
+      <text x="322" y="226" text-anchor="middle" font-family="Caveat, Segoe Script, cursive"
             font-size="78" font-weight="700" fill="#1B3A6B">знаний!</text>
-      <path d="M392 288 C 428 278 462 282 486 274" stroke="#E0A93B" stroke-width="6"
-            fill="none" stroke-linecap="round"/>
       <g fill="#E0A93B">
-        <path d="M474 292 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4 Z"/>
-        <path d="M240 150 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"/>
+        <path d="M240 100 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"/>
+        <path d="M430 178 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"/>
       </g>
     </g>
 
@@ -404,33 +402,383 @@ export function crystal(size = 22) {
 
 /** Фон карты Лингограда: река, дороги, кварталы (ТЗ §16). */
 export function cityMap() {
+  // Карта города: пять районов на одной дороге — от площади книг внизу слева
+  // до Башни Хаоса вверху справа. Силуэты стоят рядом с узлами, а не под ними:
+  // сверху на карту ложатся карточки районов с подписями.
   return `
-<svg class="art art--map" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<svg class="art art--map" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice"
+     aria-hidden="true">
   <defs>
     <linearGradient id="mapBg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FFF8ED"/><stop offset="100%" stop-color="#FBEBCF"/>
+      <stop offset="0%" stop-color="#FFF8ED"/>
+      <stop offset="72%" stop-color="#FAE7C6"/>
+      <stop offset="100%" stop-color="#F2D3C0"/>
     </linearGradient>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M40 0 L0 0 0 40" fill="none" stroke="rgba(32,36,58,.06)" stroke-width="1"/>
+      <path d="M40 0 L0 0 0 40" fill="none" stroke="rgba(32,36,58,.055)" stroke-width="1"/>
     </pattern>
+    <radialGradient id="mapStorm" cx="88%" cy="16%" r="30%">
+      <stop offset="0%" stop-color="#E85B5B" stop-opacity=".38"/>
+      <stop offset="100%" stop-color="#E85B5B" stop-opacity="0"/>
+    </radialGradient>
   </defs>
+
   <rect width="1000" height="560" fill="url(#mapBg)"/>
   <rect width="1000" height="560" fill="url(#grid)"/>
-  <path d="M-20 420 Q220 360 420 430 T1020 380" stroke="#BBD5F5" stroke-width="42"
-        fill="none" opacity=".75" stroke-linecap="round"/>
-  <path d="M80 520 Q260 300 500 300 T900 120" stroke="#EBD8B0" stroke-width="26"
-        fill="none" stroke-linecap="round"/>
-  <path d="M120 120 Q380 180 560 120 T940 300" stroke="#EBD8B0" stroke-width="18"
-        fill="none" stroke-linecap="round" opacity=".8"/>
-  <g fill="rgba(49,85,217,.07)">
-    <rect x="120" y="60" width="150" height="90" rx="18"/>
-    <rect x="700" y="420" width="180" height="100" rx="18"/>
-    <rect x="420" y="470" width="140" height="70" rx="18"/>
+
+  <!-- река через весь город -->
+  <path d="M-30 470 Q 180 430 330 470 T 700 430 T 1030 470" stroke="#BBD5F5"
+        stroke-width="46" fill="none" opacity=".7" stroke-linecap="round"/>
+  <path d="M-30 470 Q 180 430 330 470 T 700 430 T 1030 470" stroke="#FFFFFF"
+        stroke-width="8" fill="none" opacity=".35" stroke-linecap="round"/>
+
+  <!-- дорога: снизу слева наверх справа, через все пять районов -->
+  <path d="M60 250 Q 200 300 300 380 Q 420 460 560 200 Q 640 60 700 300 Q 780 470 900 210"
+        stroke="#E4CFA4" stroke-width="30" fill="none" stroke-linecap="round"/>
+  <path d="M60 250 Q 200 300 300 380 Q 420 460 560 200 Q 640 60 700 300 Q 780 470 900 210"
+        stroke="#FFF8ED" stroke-width="6" fill="none" stroke-linecap="round"
+        stroke-dasharray="14 20" opacity=".8"/>
+
+  <!-- 1. площадь книг (узел слева вверху) -->
+  <g opacity=".55">
+    <rect x="36" y="176" width="54" height="16" rx="4" fill="#3155D9"/>
+    <rect x="42" y="158" width="42" height="18" rx="4" fill="#E8DCC0"/>
+    <rect x="48" y="140" width="52" height="18" rx="4" fill="#C2452E"/>
+    <path d="M120 192 v-40" stroke="#F28C38" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="120" cy="146" r="10" fill="#FFC94A"/>
   </g>
-  <g fill="#F28C38" opacity=".5">
-    <circle cx="180" cy="330" r="7"/><circle cx="880" cy="220" r="6"/><circle cx="520" cy="90" r="5"/>
+
+  <!-- 2. лаборатория (узел слева внизу) -->
+  <g opacity=".5">
+    <path d="M300 430 v-34 h26 v34 a24 24 0 0 1 -26 0 Z" fill="#7357C8"/>
+    <path d="M342 430 v-46 h20 v46 a20 20 0 0 1 -20 0 Z" fill="#3155D9"/>
+    <circle cx="313" cy="374" r="7" fill="#55B77A"/>
+    <circle cx="336" cy="358" r="5" fill="#7357C8"/>
+    <rect x="286" y="430" width="92" height="10" rx="5" fill="#3155D9"/>
+  </g>
+
+  <!-- 3. мост (узел в центре сверху) -->
+  <g opacity=".5">
+    <path d="M470 176 h180 v12 H470 Z" fill="#F28C38"/>
+    <path d="M498 188 a32 32 0 0 1 64 0 Z" fill="#F28C38"/>
+    <path d="M574 188 a32 32 0 0 1 56 0 Z" fill="#F28C38"/>
+    <path d="M478 176 v-34 q0 -14 14 -14 t10 14" stroke="#20243A" stroke-width="4"
+          fill="none" stroke-linecap="round"/>
+    <circle cx="502" cy="142" r="8" fill="#FFC94A"/>
+  </g>
+
+  <!-- 4. архив (узел справа внизу) -->
+  <g opacity=".55">
+    <rect x="646" y="378" width="120" height="86" rx="8" fill="#2A3576"/>
+    <path d="M646 378 l60 -38 l60 38 Z" fill="#232B5C"/>
+    <g fill="#FFC94A" opacity=".7">
+      <rect x="666" y="404" width="18" height="34" rx="9"/>
+      <rect x="697" y="404" width="18" height="34" rx="9"/>
+      <rect x="728" y="404" width="18" height="34" rx="9"/>
+    </g>
+  </g>
+
+  <!-- 5. Башня Хаоса (узел справа вверху) -->
+  <ellipse cx="890" cy="150" rx="150" ry="130" fill="url(#mapStorm)"/>
+  <g opacity=".7">
+    <rect x="856" y="196" width="76" height="26" rx="5" fill="#20243A"/>
+    <rect x="864" y="166" width="62" height="26" rx="5" fill="#2A2350"/>
+    <rect x="852" y="136" width="76" height="26" rx="5" fill="#20243A"/>
+    <rect x="868" y="106" width="56" height="26" rx="5" fill="#3B2A70"/>
+    <path d="M934 84 L960 40 L944 96" stroke="#E85B5B" stroke-width="4" fill="none"
+          stroke-linecap="round" opacity=".8"/>
+  </g>
+
+  <!-- осенние деревья по краям -->
+  <g opacity=".45">
+    <circle cx="196" cy="90" r="26" fill="#F28C38"/>
+    <rect x="192" y="108" width="7" height="26" rx="3" fill="#8A5A2B"/>
+    <circle cx="420" cy="286" r="22" fill="#E8853A"/>
+    <rect x="417" y="300" width="6" height="22" rx="3" fill="#8A5A2B"/>
+    <circle cx="620" cy="518" r="24" fill="#F2AE4E"/>
+    <rect x="617" y="534" width="6" height="22" rx="3" fill="#8A5A2B"/>
+    <circle cx="80" cy="430" r="20" fill="#E8853A"/>
+    <circle cx="960" cy="470" r="26" fill="#F28C38"/>
+  </g>
+
+  <!-- домики фоном -->
+  <g fill="#3155D9" opacity=".1">
+    <rect x="150" y="470" width="70" height="52" rx="8"/>
+    <rect x="240" y="490" width="52" height="42" rx="8"/>
+    <rect x="800" y="500" width="64" height="46" rx="8"/>
   </g>
 </svg>`;
+}
+
+export function zoneBg(district = 'words') {
+  const shells = {
+    words: `
+      <defs>
+        <linearGradient id="bgW" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FFF1DA"/><stop offset="100%" stop-color="#FFF8ED"/>
+        </linearGradient>
+        <linearGradient id="bgWsun" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#FFC94A" stop-opacity=".5"/>
+          <stop offset="100%" stop-color="#FFC94A" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="800" fill="url(#bgW)"/>
+      <circle cx="228" cy="128" r="128" fill="url(#bgWsun)"/>
+
+      <!-- дома-стеллажи слева -->
+      <g fill="#3155D9" opacity=".16">
+        <rect x="24" y="250" width="150" height="470" rx="12"/>
+        <rect x="188" y="330" width="118" height="390" rx="12"/>
+      </g>
+      <g fill="#20243A" opacity=".1">
+        <rect x="46" y="292" width="106" height="30" rx="6"/>
+        <rect x="46" y="342" width="106" height="30" rx="6"/>
+        <rect x="46" y="392" width="106" height="30" rx="6"/>
+        <rect x="208" y="372" width="78" height="26" rx="6"/>
+        <rect x="208" y="414" width="78" height="26" rx="6"/>
+      </g>
+      <path d="M99 250 q50 -56 0 -96 q-50 40 0 96 Z" fill="#3155D9" opacity=".2"/>
+
+      <!-- дома-стеллажи справа -->
+      <g fill="#3155D9" opacity=".16">
+        <rect x="1026" y="228" width="150" height="492" rx="12"/>
+        <rect x="892" y="352" width="118" height="368" rx="12"/>
+      </g>
+      <g fill="#20243A" opacity=".1">
+        <rect x="1048" y="272" width="106" height="30" rx="6"/>
+        <rect x="1048" y="322" width="106" height="30" rx="6"/>
+        <rect x="1048" y="372" width="106" height="30" rx="6"/>
+        <rect x="912" y="394" width="78" height="26" rx="6"/>
+      </g>
+      <path d="M1101 228 q50 -56 0 -96 q-50 40 0 96 Z" fill="#3155D9" opacity=".2"/>
+
+      <!-- фонари -->
+      <g stroke="#F28C38" stroke-width="6" fill="none" opacity=".35" stroke-linecap="round">
+        <path d="M340 720 v-150"/><path d="M860 720 v-150"/>
+      </g>
+      <g fill="#FFC94A" opacity=".5">
+        <circle cx="340" cy="556" r="20"/><circle cx="860" cy="556" r="20"/>
+      </g>
+
+      <!-- мостовая -->
+      <rect x="0" y="716" width="1200" height="84" fill="#F2E2C6" opacity=".8"/>
+      <g stroke="#20243A" stroke-width="2" opacity=".07">
+        <path d="M0 748 H1200"/><path d="M120 716 V800"/><path d="M340 716 V800"/>
+        <path d="M560 716 V800"/><path d="M780 716 V800"/><path d="M1000 716 V800"/>
+      </g>`,
+
+    morphology: `
+      <defs>
+        <linearGradient id="bgM" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#E3EEFF"/><stop offset="100%" stop-color="#F4F8FF"/>
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="800" fill="url(#bgM)"/>
+
+      <!-- окно в глубине -->
+      <rect x="470" y="90" width="260" height="300" rx="130" fill="#FFFFFF" opacity=".55"/>
+      <g stroke="#7357C8" stroke-width="4" opacity=".16" fill="none">
+        <path d="M600 90 V390"/><path d="M470 240 H730"/>
+      </g>
+
+      <!-- стеллаж слева с колбами -->
+      <g opacity=".2">
+        <rect x="40" y="300" width="230" height="18" rx="6" fill="#7357C8"/>
+        <rect x="40" y="470" width="230" height="18" rx="6" fill="#7357C8"/>
+      </g>
+      <g opacity=".3">
+        <path d="M92 300 v-52 h44 v52 a34 34 0 0 1 -44 0 Z" fill="#55B77A"/>
+        <path d="M172 300 v-70 h36 v70 a30 30 0 0 1 -36 0 Z" fill="#3155D9"/>
+        <path d="M100 470 v-58 h40 v58 a32 32 0 0 1 -40 0 Z" fill="#7357C8"/>
+      </g>
+
+      <!-- перегонный куб справа -->
+      <g opacity=".26">
+        <circle cx="1030" cy="470" r="86" fill="#7357C8"/>
+        <rect x="1012" y="330" width="36" height="70" rx="10" fill="#7357C8"/>
+        <path d="M1030 330 q-90 -40 -120 30" stroke="#3155D9" stroke-width="12"
+              fill="none" stroke-linecap="round"/>
+        <rect x="946" y="556" width="168" height="20" rx="8" fill="#3155D9"/>
+      </g>
+
+      <!-- светящиеся частицы-морфемы -->
+      <g opacity=".4">
+        <circle cx="352" cy="196" r="9" fill="#7357C8"/>
+        <circle cx="428" cy="128" r="6" fill="#3155D9"/>
+        <circle cx="300" cy="290" r="7" fill="#55B77A"/>
+        <circle cx="880" cy="180" r="8" fill="#7357C8"/>
+        <circle cx="812" cy="126" r="5" fill="#3155D9"/>
+        <circle cx="930" cy="262" r="6" fill="#55B77A"/>
+        <circle cx="196" cy="150" r="6" fill="#7357C8"/>
+        <circle cx="1084" cy="196" r="7" fill="#3155D9"/>
+      </g>
+
+      <!-- стол -->
+      <rect x="0" y="700" width="1200" height="100" fill="#DCE7F8"/>
+      <rect x="0" y="700" width="1200" height="10" fill="#C6D6F0"/>`,
+
+    syntax: `
+      <defs>
+        <linearGradient id="bgS" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FFE0B4"/>
+          <stop offset="55%" stop-color="#FFF0DC"/>
+          <stop offset="100%" stop-color="#FFF6E8"/>
+        </linearGradient>
+        <linearGradient id="bgSriver" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#F2B441" stop-opacity=".55"/>
+          <stop offset="100%" stop-color="#3155D9" stop-opacity=".25"/>
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="800" fill="url(#bgS)"/>
+      <circle cx="600" cy="330" r="120" fill="#FFC94A" opacity=".35"/>
+
+      <!-- берега -->
+      <path d="M0 620 q120 -40 240 -12 v192 H0 Z" fill="#E8A64F" opacity=".3"/>
+      <path d="M1200 610 q-130 -44 -250 -8 v198 h250 Z" fill="#E8A64F" opacity=".3"/>
+
+      <!-- река -->
+      <rect x="0" y="640" width="1200" height="160" fill="url(#bgSriver)"/>
+      <g stroke="#FFF8ED" stroke-width="4" opacity=".35" stroke-linecap="round">
+        <path d="M120 700 h120"/><path d="M320 736 h90"/><path d="M760 704 h130"/>
+        <path d="M960 744 h100"/>
+      </g>
+
+      <!-- арки моста -->
+      <g fill="#F28C38" opacity=".28">
+        <path d="M0 640 h1200 v40 H0 Z"/>
+        <path d="M132 680 a92 92 0 0 1 184 0 Z"/>
+        <path d="M508 680 a92 92 0 0 1 184 0 Z"/>
+        <path d="M884 680 a92 92 0 0 1 184 0 Z"/>
+      </g>
+
+      <!-- фонари-завитки -->
+      <g stroke="#20243A" stroke-width="7" fill="none" opacity=".22" stroke-linecap="round">
+        <path d="M180 640 v-190 q0 -40 40 -40 t28 40"/>
+        <path d="M1020 640 v-190 q0 -40 -40 -40 t-28 40"/>
+      </g>
+      <g fill="#FFC94A" opacity=".55">
+        <circle cx="248" cy="452" r="19"/><circle cx="952" cy="452" r="19"/>
+      </g>
+
+      <!-- осенние кроны по верхним углам -->
+      <g opacity=".3">
+        <circle cx="60" cy="70" r="120" fill="#F28C38"/>
+        <circle cx="1150" cy="46" r="110" fill="#E8853A"/>
+      </g>`,
+
+    archive: `
+      <defs>
+        <linearGradient id="bgA" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#161C42"/><stop offset="100%" stop-color="#232B5C"/>
+        </linearGradient>
+        <radialGradient id="bgAglow" cx="50%" cy="52%" r="46%">
+          <stop offset="0%" stop-color="#FFC94A" stop-opacity=".3"/>
+          <stop offset="100%" stop-color="#FFC94A" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="1200" height="800" fill="url(#bgA)"/>
+
+      <!-- звёзды и луна в глубине -->
+      <g fill="#FFF8ED" opacity=".5">
+        <circle cx="540" cy="86" r="3"/><circle cx="622" cy="130" r="2.4"/>
+        <circle cx="700" cy="72" r="3"/><circle cx="470" cy="140" r="2"/>
+        <circle cx="760" cy="150" r="2.6"/>
+      </g>
+      <path d="M660 60 a44 44 0 1 0 40 62 a52 52 0 0 1 -40 -62 Z" fill="#FFD979" opacity=".45"/>
+
+      <!-- стеллажи со свитками по краям -->
+      <g fill="#2A3576">
+        <rect x="0" y="150" width="250" height="650"/>
+        <rect x="266" y="270" width="150" height="530"/>
+        <rect x="950" y="150" width="250" height="650"/>
+        <rect x="790" y="290" width="146" height="510"/>
+      </g>
+      <g fill="#FFC94A" opacity=".2">
+        <rect x="26" y="210" width="198" height="16" rx="6"/>
+        <rect x="26" y="300" width="198" height="16" rx="6"/>
+        <rect x="26" y="390" width="198" height="16" rx="6"/>
+        <rect x="26" y="480" width="198" height="16" rx="6"/>
+        <rect x="290" y="330" width="104" height="14" rx="6"/>
+        <rect x="290" y="420" width="104" height="14" rx="6"/>
+        <rect x="976" y="200" width="198" height="16" rx="6"/>
+        <rect x="976" y="290" width="198" height="16" rx="6"/>
+        <rect x="976" y="380" width="198" height="16" rx="6"/>
+        <rect x="814" y="352" width="100" height="14" rx="6"/>
+      </g>
+      <g fill="#FFF8ED" opacity=".14">
+        <rect x="40" y="238" width="26" height="52" rx="8"/>
+        <rect x="76" y="238" width="20" height="52" rx="8"/>
+        <rect x="112" y="238" width="30" height="52" rx="8"/>
+        <rect x="990" y="228" width="24" height="52" rx="8"/>
+        <rect x="1026" y="228" width="30" height="52" rx="8"/>
+      </g>
+
+      <!-- лампы -->
+      <g opacity=".5">
+        <circle cx="300" cy="210" r="26" fill="#FFC94A"/>
+        <circle cx="900" cy="196" r="22" fill="#FFC94A"/>
+      </g>
+
+      <!-- тёплое пятно света в центре, под карточку -->
+      <ellipse cx="600" cy="430" rx="430" ry="330" fill="url(#bgAglow)"/>
+      <ellipse cx="600" cy="762" rx="330" ry="42" fill="#FFC94A" opacity=".1"/>`,
+
+    tower: `
+      <defs>
+        <linearGradient id="bgC" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1B2050"/>
+          <stop offset="55%" stop-color="#3B2A70"/>
+          <stop offset="100%" stop-color="#5B2E63"/>
+        </linearGradient>
+        <radialGradient id="bgCglow" cx="50%" cy="46%" r="52%">
+          <stop offset="0%" stop-color="#E85B5B" stop-opacity=".34"/>
+          <stop offset="100%" stop-color="#E85B5B" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="1200" height="800" fill="url(#bgC)"/>
+      <ellipse cx="600" cy="380" rx="520" ry="380" fill="url(#bgCglow)"/>
+
+      <!-- трещины по краям -->
+      <g stroke="#FF2E45" fill="none" stroke-linecap="round" opacity=".5">
+        <path d="M60 0 L96 120 L40 190 L110 280" stroke-width="4"/>
+        <path d="M150 60 L120 110 M64 250 L20 300" stroke-width="3"/>
+        <path d="M1130 20 L1090 140 L1150 210 L1080 300" stroke-width="4"/>
+        <path d="M1040 90 L1084 150 M1120 340 L1060 400" stroke-width="3"/>
+      </g>
+
+      <!-- башня из блоков сбоку -->
+      <g fill="#20243A" opacity=".55">
+        <rect x="944" y="612" width="150" height="60" rx="8"/>
+        <rect x="956" y="544" width="132" height="60" rx="8"/>
+        <rect x="938" y="476" width="146" height="60" rx="8"/>
+        <rect x="962" y="408" width="120" height="60" rx="8"/>
+        <rect x="948" y="340" width="132" height="60" rx="8"/>
+        <rect x="972" y="272" width="106" height="60" rx="8"/>
+      </g>
+      <g fill="#7357C8" opacity=".3">
+        <rect x="944" y="612" width="150" height="10" rx="5"/>
+        <rect x="938" y="476" width="146" height="10" rx="5"/>
+        <rect x="948" y="340" width="132" height="10" rx="5"/>
+      </g>
+
+      <!-- руины городка слева -->
+      <g fill="#20243A" opacity=".4">
+        <rect x="40" y="640" width="90" height="120" rx="6"/>
+        <rect x="150" y="686" width="70" height="74" rx="6"/>
+        <rect x="238" y="654" width="60" height="106" rx="6"/>
+      </g>
+
+      <!-- туман у основания -->
+      <ellipse cx="600" cy="784" rx="640" ry="70" fill="#5B2E63" opacity=".55"/>
+      <ellipse cx="300" cy="770" rx="280" ry="46" fill="#3B2A70" opacity=".5"/>`,
+  };
+
+  // ключи совпадают с идентификаторами районов на сервере
+  // (words, morphology, syntax, archive, tower)
+  const inner = shells[district] || shells.words;
+  return `
+<svg class="zonebg__svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice"
+     aria-hidden="true">${inner}</svg>`;
 }
 
 /* Хранители букв — маленькие жители Лингограда, которые держат таблички

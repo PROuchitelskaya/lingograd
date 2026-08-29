@@ -6,7 +6,7 @@ import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
 import * as net from './net.js';
 import * as fx from './fx.js';
 import { cityScene, chaosVillain, chaosTower, bridge, schoolBell, crystal, cityMap,
-         knowledgeDay, keeperBig } from './art.js';
+         knowledgeDay, zoneBg, keeperBig } from './art.js';
 import { buildQuestion, revealBlock } from './question.js';
 
 const root = document.getElementById('app');
@@ -401,6 +401,7 @@ function renderMap() {
 function renderMissionIntro() {
   const m = state.mission;
   const node = h('div', { class: `screen screen--intro ${m.zone}` },
+    h('div', { class: 'zonebg', html: zoneBg(m.district) }),
     hud(),
     h('div', { class: 'intro' },
       h('div', { class: 'intro__icon' }, m.icon),
@@ -432,6 +433,7 @@ function renderQuestion() {
   });
 
   const node = h('div', { class: `screen screen--question ${m.zone}` },
+    h('div', { class: 'zonebg', html: zoneBg(m.district) }),
     hud(),
     h('div', { class: 'qtop' },
       h('div', { class: 'qtop__where' },
@@ -476,6 +478,7 @@ function renderReveal() {
   const m = state.mission;
   const mine = state.me || {};
   const node = h('div', { class: `screen screen--reveal ${m.zone}` },
+    h('div', { class: 'zonebg', html: zoneBg(m.district) }),
     hud(),
     h('div', { class: 'revealwrap' },
       h('div', { class: 'revealhead' },
@@ -507,6 +510,7 @@ function renderMissionComplete() {
   const rep = state.mission_report || {};
   fx.confettiBurst(window.innerWidth / 2, window.innerHeight / 3, 60);
   const node = h('div', { class: `screen screen--done ${rep.zone || ''}` },
+    h('div', { class: 'zonebg', html: zoneBg(rep.district || state.mission?.district) }),
     hud(),
     h('div', { class: 'done' },
       h('div', { class: 'done__icon' }, rep.icon || '✅'),
