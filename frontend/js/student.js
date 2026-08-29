@@ -347,8 +347,7 @@ function renderSeptember() {
   setTimeout(() => fx.confettiBurst(window.innerWidth / 2, 160), 500);
 
   const node = h('div', { class: 'screen screen--september' },
-    h('div', { class: 'sept__bell', html: schoolBell() }),
-    h('h1', { class: 'display display--gold' }, 'С 1 СЕНТЯБРЯ! 🎉'),
+    h('div', { class: 'sept__card', html: knowledgeDay() }),
     h('p', { class: 'lead' }, 'Новый учебный год начинается прямо сейчас.'),
     h('p', { class: 'lead lead--dim' }, 'Но в Лингограде что-то пошло не так…'),
     h('div', { class: 'phase-bar' }, h('span', { id: 'phase-bar' })),

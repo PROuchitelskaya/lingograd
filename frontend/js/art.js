@@ -233,6 +233,154 @@ export function bridge(done = 0, total = 6) {
 }
 
 /** Школьный звонок для финала (ТЗ §28). */
+/** Открытка «С Днём знаний»: тетрадный лист, осенние листья и школьный стол.
+ *  Рисуем векторно — на телефоне это пара килобайт вместо мегабайта фотографии. */
+export function knowledgeDay() {
+  const leaf = (x, y, rot, scale, fill) => `
+    <g transform="translate(${x} ${y}) rotate(${rot}) scale(${scale})">
+      <path d="M0 0 C 16 -22 44 -26 58 -10 C 44 16 16 22 0 0 Z" fill="${fill}"/>
+      <path d="M0 0 L 54 -8" stroke="#B9713A" stroke-width="1.6" opacity=".45" fill="none"/>
+    </g>`;
+
+  const maple = (x, y, rot, scale, fill) => `
+    <path transform="translate(${x} ${y}) rotate(${rot}) scale(${scale})"
+      d="M0 -20 L6 -8 L18 -14 L12 -2 L24 2 L11 6 L16 18 L3 11 L0 24
+         L-3 11 L-16 18 L-11 6 L-24 2 L-12 -2 L-18 -14 L-6 -8 Z" fill="${fill}"/>`;
+
+  return `
+<svg class="art art--kday kday" viewBox="0 0 640 460" aria-hidden="true">
+  <defs>
+    <pattern id="kdGrid" width="26" height="26" patternUnits="userSpaceOnUse">
+      <path d="M26 0 L0 0 0 26" fill="none" stroke="#C7D7EA" stroke-width="1" opacity=".7"/>
+    </pattern>
+    <linearGradient id="kdGlobe" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#BFD8EA"/><stop offset="100%" stop-color="#8FB6D4"/>
+    </linearGradient>
+    <filter id="kdSoft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <clipPath id="kdFrame"><rect width="640" height="460" rx="24"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#kdFrame)">
+    <rect width="640" height="460" fill="#FFFDF8"/>
+    <rect width="640" height="460" fill="url(#kdGrid)"/>
+
+    <g filter="url(#kdSoft)" opacity=".5">
+      <ellipse cx="66" cy="52" rx="120" ry="72" fill="#F7CBA8"/>
+      <ellipse cx="592" cy="86" rx="110" ry="80" fill="#BCD6EC"/>
+      <ellipse cx="40" cy="404" rx="96" ry="66" fill="#BCD6EC"/>
+      <ellipse cx="606" cy="392" rx="104" ry="70" fill="#F7CBA8"/>
+    </g>
+
+    <g class="kday__branch">
+      <path d="M-6 26 C 60 44 120 66 176 104" stroke="#B9713A" stroke-width="3"
+            fill="none" opacity=".6"/>
+      ${leaf(24, 30, -24, 1.05, '#E8853A')}
+      ${leaf(76, 52, 6, 0.95, '#F2AE4E')}
+      ${leaf(120, 78, 28, 0.85, '#8FB6D4')}
+      ${leaf(46, 74, 52, 0.8, '#D8603C')}
+      <circle cx="104" cy="44" r="7" fill="#D8603C"/>
+      <circle cx="120" cy="36" r="6" fill="#C4472C"/>
+      <circle cx="112" cy="58" r="5" fill="#D8603C"/>
+    </g>
+
+    <g class="kday__plane">
+      <path d="M470 96 L534 66 L516 122 L500 104 Z" fill="none" stroke="#1B3A6B"
+            stroke-width="3" stroke-linejoin="round"/>
+      <path d="M470 96 L500 104" stroke="#1B3A6B" stroke-width="3"/>
+      <path d="M392 128 C 414 106 436 132 458 108" stroke="#1B3A6B" stroke-width="2.4"
+            fill="none" stroke-dasharray="5 8" stroke-linecap="round" opacity=".65"/>
+    </g>
+
+    <g class="kday__bulb">
+      <path d="M64 176 a20 20 0 1 1 30 0 c-4 6 -6 9 -6 15 h-18 c0 -6 -2 -9 -6 -15 Z"
+            fill="#FFF3D6" stroke="#1B3A6B" stroke-width="2.6"/>
+      <path d="M72 200 h14 M73 206 h12" stroke="#1B3A6B" stroke-width="2.6" stroke-linecap="round"/>
+      <g stroke="#E0A93B" stroke-width="2.4" stroke-linecap="round">
+        <path d="M52 150 L44 144"/><path d="M108 150 L116 144"/><path d="M80 132 L80 122"/>
+      </g>
+    </g>
+
+    <g class="kday__title">
+      <text x="336" y="200" text-anchor="middle" font-family="Caveat, Segoe Script, cursive"
+            font-size="78" font-weight="700" fill="#1B3A6B">С Днём</text>
+      <text x="322" y="276" text-anchor="middle" font-family="Caveat, Segoe Script, cursive"
+            font-size="78" font-weight="700" fill="#1B3A6B">знаний!</text>
+      <path d="M396 272 C 456 254 512 262 550 248" stroke="#E0A93B" stroke-width="6"
+            fill="none" stroke-linecap="round"/>
+      <g fill="#E0A93B">
+        <path d="M474 292 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4 Z"/>
+        <path d="M240 150 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"/>
+      </g>
+    </g>
+
+    <rect x="0" y="392" width="640" height="68" fill="#EADFCB"/>
+    <rect x="0" y="392" width="640" height="7" fill="#D9C9AC"/>
+
+    <g>
+      <rect x="46" y="352" width="150" height="20" rx="4" fill="#C2452E"/>
+      <rect x="46" y="352" width="12" height="20" fill="#9E3423"/>
+      <rect x="36" y="330" width="164" height="22" rx="4" fill="#E8DCC0"/>
+      <rect x="36" y="330" width="12" height="22" fill="#CBBB97"/>
+      <rect x="52" y="306" width="140" height="24" rx="4" fill="#1B3A6B"/>
+      <rect x="52" y="306" width="12" height="24" fill="#12294D"/>
+    </g>
+
+    <g class="kday__bell">
+      <path d="M122 244 v-14" stroke="#7A4B22" stroke-width="6" stroke-linecap="round"/>
+      <path d="M96 300 c0 -34 12 -56 26 -56 s26 22 26 56 Z" fill="#E8B33C"/>
+      <rect x="88" y="296" width="68" height="10" rx="5" fill="#C98F27"/>
+      <circle cx="122" cy="309" r="7" fill="#C98F27"/>
+      <path d="M122 246 l-20 -13 7 20 Z" fill="#1B3A6B"/>
+      <path d="M122 246 l20 -13 -7 20 Z" fill="#24478A"/>
+      <circle cx="122" cy="244" r="5" fill="#1B3A6B"/>
+    </g>
+
+    <g>
+      <g stroke-linecap="round">
+        <path d="M300 306 v-56" stroke="#E8B33C" stroke-width="8"/>
+        <path d="M314 306 v-66" stroke="#1B3A6B" stroke-width="8"/>
+        <path d="M328 306 v-48" stroke="#8FB6D4" stroke-width="8"/>
+        <path d="M342 306 v-62" stroke="#C2452E" stroke-width="8"/>
+      </g>
+      <path d="M288 306 h66 l-6 56 h-54 Z" fill="#1B3A6B"/>
+      <path d="M292 318 h58 M292 332 h58 M292 346 h56" stroke="#3D5F94" stroke-width="2"/>
+    </g>
+
+    <g class="kday__globe">
+      <circle cx="512" cy="308" r="52" fill="url(#kdGlobe)"/>
+      <path d="M486 268 q22 14 6 34 q-16 18 10 26 q22 8 14 30" stroke="#E8B33C"
+            stroke-width="7" fill="none" opacity=".85" stroke-linecap="round"/>
+      <path d="M540 278 q-12 22 10 30 q16 6 6 22" stroke="#7FA86A" stroke-width="7"
+            fill="none" opacity=".8" stroke-linecap="round"/>
+      <path d="M460 308 a52 52 0 0 0 104 0" stroke="#1B3A6B" stroke-width="3"
+            fill="none" opacity=".3"/>
+      <path d="M512 256 a34 52 0 0 0 0 104 a34 52 0 0 0 0 -104" stroke="#1B3A6B"
+            stroke-width="3" fill="none" opacity=".28"/>
+      <path d="M470 296 a52 52 0 0 1 80 -30" stroke="#FFFFFF" stroke-width="4"
+            fill="none" opacity=".4"/>
+      <path d="M512 360 v20" stroke="#1B3A6B" stroke-width="7"/>
+      <path d="M486 380 h52 l6 12 h-64 Z" fill="#1B3A6B"/>
+    </g>
+
+    <g>
+      <path d="M206 390 q70 -20 118 0 q-58 16 -118 0 Z" fill="#FFFDF8"
+            stroke="#D6C8AE" stroke-width="2"/>
+      <path d="M214 384 h44 M214 378 h40 M278 384 h40 M278 378 h36"
+            stroke="#C7D7EA" stroke-width="2"/>
+      <path d="M298 374 l28 -16" stroke="#1B3A6B" stroke-width="4" stroke-linecap="round"/>
+    </g>
+
+    <g class="kday__fall">
+      ${maple(392, 374, 12, 0.9, '#E8853A')}
+      ${maple(600, 358, -16, 0.8, '#D8603C')}
+      ${maple(178, 300, 24, 0.6, '#F2AE4E')}
+    </g>
+  </g>
+</svg>`;
+}
+
 export function schoolBell() {
   return `
 <svg class="art art--bell" viewBox="0 0 200 220" aria-hidden="true">

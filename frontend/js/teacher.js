@@ -2,11 +2,11 @@
 // (ТЗ §11–12, §43, §51). Всё на одном экране — проектор показывает то же, что класс.
 
 import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
-         readLocal, saveLocal, players } from './ui.js';
+         readLocal, saveLocal, players, letterOf } from './ui.js';
 import * as net from './net.js';
 import * as fx from './fx.js';
 import { toSVG } from './qr.js';
-import { chaosVillain, chaosTower, cityMap, schoolBell } from './art.js';
+import { chaosVillain, chaosTower, cityMap, schoolBell, knowledgeDay, keeper } from './art.js';
 
 const root = document.getElementById('app');
 let state = null;
@@ -248,10 +248,17 @@ function teacherBody(q, answer) {
     (Array.isArray(answer.correct_index) && answer.correct_index.includes(i)));
 
   if (q.answers) {
-    return h('div', { class: 'teacherq__answers' },
+    // те же хранители, что держат варианты на телефонах: класс должен
+    // узнавать «свою» карточку на проекторе с первого взгляда
+    const tf = q.type === 'true_false';
+    return h('div', { class: `teacherq__answers ${tf ? 'teacherq__answers--duo' : ''}` },
       q.answers.map((a, i) => h('div', {
         class: `teacherq__answer ${right(i) ? 'is-right' : ''}`,
-      }, `${'АБВГДЕ'[i] || i + 1}. ${a}`)));
+      },
+        h('span', { class: 'teacherq__keeper',
+                    html: tf ? keeper(i === 0 ? 2 : 4, i === 0 ? '✓' : '✕')
+                             : keeper(i, letterOf(i)) }),
+        h('span', { class: 'teacherq__atext' }, a))));
   }
 
   if (q.type === 'sort' && q.items) {
@@ -302,8 +309,7 @@ function teacherPhase(m, phaseLabel) {
 
   if (p === 'september') {
     return h('div', { class: 'teacherq teacherq--phase' },
-      h('div', { class: 'sept__bell', html: schoolBell() }),
-      h('h1', { class: 'display display--gold' }, 'С 1 СЕНТЯБРЯ! 🎉'),
+      h('div', { class: 'sept__card', html: knowledgeDay() }),
       h('p', { class: 'lead' }, 'Новый учебный год начинается прямо сейчас.'),
       h('p', { class: 'lead lead--dim' }, 'Но в Лингограде что-то пошло не так…'));
   }
