@@ -1063,7 +1063,7 @@
   display: grid;
   /* полосе нужен гарантированный минимум, иначе на проекторе от неё
      остаётся 14 px и сравнить команды невозможно */
-  grid-template-columns: 26px minmax(64px, max-content) minmax(90px, 1fr) 52px 34px;
+  grid-template-columns: 26px minmax(64px, max-content) minmax(90px, 1fr) 64px 42px;
   gap: 10px;
   align-items: center;
   background: var(--white);
@@ -1076,8 +1076,13 @@
 
 .tboard__bar { height: 12px; border-radius: var(--r-pill); background: var(--ink-06); overflow: hidden; }
 .tboard__fill { display: block; height: 100%; border-radius: var(--r-pill); transition: width .6s var(--ease); }
-.tboard__score { text-align: right; font-variant-numeric: tabular-nums; font-weight: 800; }
-.tboard__members { text-align: right; font-size: 12px; color: var(--ink-55); }
+/* цифры на проекторе читают с задней парты — кегль крупнее */
+.tboard__score { text-align: right; font-variant-numeric: tabular-nums; font-weight: 800; font-size: 21px; }
+.tboard__members { text-align: right; font-size: 16px; font-weight: 700; color: var(--ink-55); }
+
+/* в лобби вместо счёта и полосы — состав команды */
+.tboard__row--lobby { grid-template-columns: 26px minmax(64px, max-content) 1fr; }
+.tboard__who { text-align: right; font-size: 16px; font-weight: 700; color: var(--ink-70); }
 
 /* ведение игры */
 

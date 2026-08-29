@@ -163,7 +163,7 @@ function updateTimers() {
 
 function updateLive() {
   const board = document.getElementById('t-board');
-  if (board && state) mount(board, boardRows());
+  if (board && state) mount(board, boardRows(state.phase === 'lobby'));
   const online = document.getElementById('t-online');
   if (online && state) online.textContent = players(state.online);
   const roster = document.getElementById('t-players');
@@ -184,15 +184,24 @@ function updateLive() {
   if (hp) hp.style.width = `${state.chaos_hp}%`;
 }
 
-function boardRows() {
+/** Таблица команд. До начала игры счёт у всех нулевой и только сбивает с толку,
+ *  поэтому в лобби показываем не кристаллы, а состав команды. */
+function boardRows(lobby = false) {
+  if (lobby) {
+    return state.teams.map((t) => h('div', { class: 'tboard__row tboard__row--lobby' },
+      h('span', { class: 'tboard__emoji' }, t.emoji),
+      h('span', { class: 'tboard__name' }, t.name),
+      h('span', { class: 'tboard__who' },
+        t.members ? players(t.members) : 'пока никого')));
+  }
   const max = Math.max(1, ...state.teams.map((t) => t.score));
   return state.teams.map((t) => h('div', { class: 'tboard__row' },
     h('span', { class: 'tboard__emoji' }, t.emoji),
     h('span', { class: 'tboard__name' }, t.name),
     h('span', { class: 'tboard__bar' },
       h('span', { class: 'tboard__fill', style: { width: `${(t.score / max) * 100}%`, background: t.color } })),
-    h('span', { class: 'tboard__score' }, t.score),
-    h('span', { class: 'tboard__members' }, `${t.members}`)));
+    h('span', { class: 'tboard__score', title: 'кристаллы' }, t.score),
+    h('span', { class: 'tboard__members', title: 'игроков в команде' }, `${t.members}`)));
 }
 
 // --- экран подключения ----------------------------------------------------
@@ -215,7 +224,7 @@ function renderConnect() {
           h('span', { class: 'dot dot--on' }),
           h('span', { class: 'connect__count', id: 't-online' }, players(state.online)),
           h('span', { class: 'muted' }, 'подключились')),
-        h('div', { class: 'tboard', id: 't-board' }, boardRows()),
+        h('div', { class: 'tboard', id: 't-board' }, boardRows(true)),
         h('div', { class: 'connect__players', id: 't-players' },
           (state.players || []).map((p) => h('span', {
             class: `pill ${p.connected ? '' : 'is-off'}`,
