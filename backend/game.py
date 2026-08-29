@@ -29,6 +29,9 @@ TEAM_PRESET = [
 ]
 
 # Длительность служебных фаз, сек (ТЗ §14–15, §27–29)
+# запас на сетевую задержку при закрытии вопроса
+GRACE_MS = 500
+
 PHASE_TIME = {
     "september": 14,
     "story": 20,
@@ -258,7 +261,11 @@ class GameSession:
                     self.time_over = True
                     await self.hub.broadcast(self.code, {"t": "bell"})
 
-                if now_ms() >= self.deadline:
+                # вопрос закрывается на пол-секунды позже нуля таймера: ответ,
+                # отправленный в последний момент, успевает дойти через школьный
+                # вайфай и не пропадает как «задание уже закрыто»
+                grace = GRACE_MS if self.phase == "question" else 0
+                if now_ms() >= self.deadline + grace:
                     await self.advance()
 
                 if now_ms() - last_tick >= 1000:

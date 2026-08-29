@@ -363,8 +363,24 @@ function renderLive() {
 
 // --- результаты и аналитика ----------------------------------------------
 
+/** Победитель — отдельный крупный блок: на проекторе его читают с задних парт. */
+function winnerCard(top) {
+  if (!top) return null;
+  return h('div', { class: 'winner', style: { '--team': top.color } },
+    h('div', { class: 'winner__medal' }, '🥇'),
+    h('div', { class: 'winner__body' },
+      h('div', { class: 'winner__label' }, 'ПОБЕДИТЕЛЬ'),
+      h('div', { class: 'winner__name' }, `${top.emoji} ${top.name}`)),
+    h('div', { class: 'winner__nums' },
+      h('div', { class: 'winner__score' }, `${top.score}`),
+      h('div', { class: 'winner__cap' }, `кристаллов · ${Math.round(top.accuracy * 100)}% точности`)));
+}
+
 function renderFinal() {
   const ranking = state.ranking || [];
+  // листопад включался на экране подключения и больше не выключался —
+  // на итогах он летел прямо по названиям команд
+  fx.leaves(false);
   fx.confettiRain(3000);
   const node = h('div', { class: 'screen screen--tfinal' },
     h('header', { class: 'livebar' },
@@ -372,35 +388,48 @@ function renderFinal() {
       h('div', { class: 'livebar__phase' }, '🏆 Итоги игры'),
       h('div', { class: 'livebar__clock' }, `${state.grade} класс`)),
     h('div', { class: 'tfinal' },
-      h('div', null,
-        h('h1', { class: 'display' }, '🏆 РЕЗУЛЬТАТЫ'),
-        h('div', { class: 'results__list results__list--teacher' },
-          ranking.map((t) => h('div', {
-            class: `results__row ${t.place === 1 ? 'is-winner' : ''}`,
-            style: { '--team': t.color },
-          },
-            h('span', { class: 'results__place' }, t.place === 1 ? '🥇' : `${t.place}`),
-            h('span', { class: 'results__emoji' }, t.emoji),
-            h('span', { class: 'results__name' }, t.name),
-            h('span', { class: 'results__score' }, `${t.score}`),
-            h('span', { class: 'results__acc' }, `${Math.round(t.accuracy * 100)}%`)))),
-        h('div', { class: 'awards' },
-          (state.awards || []).map((a) => h('div', { class: 'award' },
-            h('span', { class: 'award__emoji' }, a.emoji),
-            h('div', null,
-              h('div', { class: 'award__title' }, a.title),
-              h('div', { class: 'award__team' }, `${a.team.emoji} ${a.team.name}`),
-              h('div', { class: 'award__value' }, a.value)))))),
+      // Левая колонка — то, что смотрит класс: победитель, места, награды.
+      h('div', { class: 'tfinal__main' },
+        h('h1', { class: 'tfinal__title' }, '🏆 РЕЗУЛЬТАТЫ'),
+        winnerCard(ranking[0]),
 
-      h('div', null,
+        h('section', { class: 'sect' },
+          h('h2', { class: 'sect__title' }, 'РЕЙТИНГ КОМАНД'),
+          h('div', { class: 'results__list results__list--teacher' },
+            ranking.slice(1).map((t) => h('div', {
+              class: 'results__row',
+              style: { '--team': t.color },
+            },
+              h('span', { class: 'results__place' }, `${t.place}`),
+              h('span', { class: 'results__emoji' }, t.emoji),
+              h('span', { class: 'results__name' }, t.name),
+              h('span', { class: 'results__score' }, `${t.score}`),
+              h('span', { class: 'results__acc' }, `${Math.round(t.accuracy * 100)}%`))))),
+
+        h('section', { class: 'sect' },
+          h('h2', { class: 'sect__title' }, 'НАГРАДЫ'),
+          h('div', { class: 'awards awards--final' },
+            (state.awards || []).map((a) => h('div', { class: 'award' },
+              h('span', { class: 'award__emoji' }, a.emoji),
+              h('div', { class: 'award__body' },
+                h('div', { class: 'award__title' }, a.title),
+                h('div', { class: 'award__team' }, `${a.team.emoji} ${a.team.name}`),
+                h('div', { class: 'award__value' }, a.value)))))),
+      ),
+
+      // Правая колонка — то, что нужно учителю: разбор по темам и людям.
+      h('div', { class: 'tfinal__side' },
         h('div', { class: 'side__title' }, 'РАЗБОР ДЛЯ УЧИТЕЛЯ'),
-        h('div', { class: 'analytics', id: 'analytics' }, h('div', { class: 'loader' })),
-        h('div', { class: 'controls controls--row' },
-          ghostButton('Обновить разбор', loadAnalytics),
-          ghostButton('Скачать CSV', downloadCsv),
-          primaryButton('НОВАЯ ИГРА', () => {
-            saveLocal('lg_teacher', null); session = null; net.close(); renderSetup();
-          })))),
+        h('div', { class: 'analytics', id: 'analytics' }, h('div', { class: 'loader' })))),
+
+    // Действия жили в хвосте боковой колонки, и «НОВАЯ ИГРА» уезжала
+    // за нижний край экрана. Теперь это постоянная полоса внизу.
+    h('div', { class: 'actionbar' },
+      ghostButton('Обновить разбор', loadAnalytics),
+      ghostButton('Скачать CSV', downloadCsv),
+      primaryButton('НОВАЯ ИГРА', () => {
+        saveLocal('lg_teacher', null); session = null; net.close(); renderSetup();
+      })),
   );
   swapScreen(root, node, 'tfinal');
   loadAnalytics();
@@ -430,7 +459,7 @@ async function loadAnalytics() {
           h('span', { class: 'anal__topic' }, q.topic)))),
       h('div', { class: 'side__title' }, 'ЛУЧШИЕ ИГРОКИ'),
       h('div', { class: 'anal__list' },
-        (data.players || []).slice(0, 8).map((p, i) => h('div', { class: 'anal__row' },
+        (data.players || []).slice(0, 5).map((p, i) => h('div', { class: 'anal__row' },
           h('span', { class: 'anal__pct' }, `${i + 1}`),
           h('span', { class: 'anal__q' }, p.name),
           h('span', { class: 'anal__topic' }, `${p.score} · ${p.correct}/${p.answered}`)))));

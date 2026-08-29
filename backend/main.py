@@ -258,8 +258,11 @@ async def ws_endpoint(ws: WebSocket):
                     await hub.push_state(code)
 
             elif t == "answer" and player:
-                res = await session.submit(player, msg.get("qid", ""), msg.get("payload"))
-                await hub.send(ws, {"t": "answer_result"} | res)
+                qid = msg.get("qid", "")
+                res = await session.submit(player, qid, msg.get("payload"))
+                # qid обязателен: ответ мог прийти уже после смены задания,
+                # и без него вердикт прилипал бы к следующей карточке
+                await hub.send(ws, {"t": "answer_result", "qid": qid} | res)
 
             elif t == "teacher" and conn.role == "teacher":
                 await session.teacher_action(msg.get("action", ""), msg.get("value"))

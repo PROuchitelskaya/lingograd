@@ -68,6 +68,9 @@ function wireNet() {
   });
   net.on('answer_result', (msg) => {
     if (!activeQuestion) return;
+    // ответ мог прийти уже после смены задания — тогда он не наш,
+    // иначе «правильно» из прошлого вопроса вспыхивало на новой карточке
+    if (msg.qid && state?.question?.id && msg.qid !== state.question.id) return;
     if (msg.ok === false) {
       // сервер отказал — карточку надо вернуть ученику, иначе он молча выпадает
       if (msg.reason === 'no_team') {
@@ -268,7 +271,9 @@ function render() {
   const key = [
     phase,
     state.mission?.index,
-    phase === 'question' ? state.question?.id : '',
+    // номер показа в ключе: без него два разных задания с совпавшим
+    // идентификатором дали бы один ключ и карточка не перерисовалась бы
+    phase === 'question' ? `${state.global_index}:${state.question?.id ?? ''}` : '',
     phase === 'lobby' ? (state.me?.team_id ? 'team' : 'pick') : '',
   ].join('|');
 
@@ -433,7 +438,9 @@ function renderMissionIntro() {
 
 function renderQuestion() {
   const q = state.question;
-  if (!q) return;
+  // ключ уже переписан выше: не сбросив его, экран навсегда застрял бы
+  // на предыдущей карточке
+  if (!q) { screenKey = ''; return; }
   const m = state.mission;
   const isTower = m.district === 'tower';
 
@@ -469,12 +476,14 @@ function renderQuestion() {
   );
 
   if (state.me?.answer_done) {
+    // это не свежий вердикт, а восстановление: какой вариант был выбран,
+    // клиент уже не знает, поэтому просто запираем карточку без раскраски
     activeQuestion.lock();
     activeQuestion.showResult({
       correct: state.me.answer_correct,
       points: state.me.answer_points,
       attempts_left: 0,
-    });
+    }, { restored: true });
   }
   swapScreen(root, node, 'question');
 }

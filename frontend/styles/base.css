@@ -48,7 +48,12 @@ button, input { font: inherit; color: inherit; }
   animation: screen-in .42s var(--ease) both;
 }
 
+/* Пока экран выезжает, он прозрачен, но раньше оставался кликабельным:
+   палец, отпущенный над только что подменённым экраном, попадал в вариант
+   ответа — и у single_choice это сразу уходило на сервер как ответ. */
 .screen-enter { opacity: 0; transform: translateY(14px); }
+.screen-enter, .screen-enter *,
+.screen-locked, .screen-locked * { pointer-events: none !important; }
 
 @keyframes screen-in {
   from { opacity: 0; transform: translateY(16px); }
@@ -102,7 +107,10 @@ button, input { font: inherit; color: inherit; }
 .muted--center { text-align: center; }
 .hint { color: var(--ink-55); font-size: 14px; text-align: center; margin: 10px 0 0; }
 .link { color: var(--blue); font-weight: 700; text-decoration: none; border-bottom: 2px solid rgba(49,85,217,.25); }
-.link:hover { border-bottom-color: var(--blue); }
+/* Наведение — только для мыши: в мобильном Safari :hover залипает после тапа
+   и переносится на элемент, оказавшийся в той же точке нового экрана,
+   из-за чего вариант ответа выглядел выбранным ещё до выбора. */
+@media (hover: hover) and (pointer: fine) { .link:hover { border-bottom-color: var(--blue); } }
 
 .badge {
   align-self: center;
@@ -184,7 +192,7 @@ button, input { font: inherit; color: inherit; }
   box-shadow: 0 10px 24px rgba(49,85,217,.28);
 }
 
-.btn--primary:not(:disabled):hover { box-shadow: 0 14px 30px rgba(49,85,217,.34); }
+@media (hover: hover) and (pointer: fine) { .btn--primary:not(:disabled):hover { box-shadow: 0 14px 30px rgba(49,85,217,.34); } }
 
 /* «Дыхание» главной кнопки: 2.5 с (ТЗ §9) */
 .btn--breathe { animation: breathe 2.5s var(--ease) infinite; }
@@ -213,8 +221,8 @@ button, input { font: inherit; color: inherit; }
   padding: 12px 16px;
 }
 
-.btn--ctrl:hover { border-color: var(--blue); color: var(--blue); }
-.btn--danger:hover { border-color: #C0392B; color: #C0392B; }
+@media (hover: hover) and (pointer: fine) { .btn--ctrl:hover { border-color: var(--blue); color: var(--blue); } }
+@media (hover: hover) and (pointer: fine) { .btn--danger:hover { border-color: #C0392B; color: #C0392B; } }
 
 .iconbtn {
   width: 48px;
@@ -511,11 +519,18 @@ button, input { font: inherit; color: inherit; }
   /* длинные названия миссий не должны уезжать за край телефона */
   .chip { white-space: normal; }
   .screen { padding: 14px 12px 92px; gap: 14px; }
-  .hud { padding: 8px 10px; gap: 6px; }
-  .hud__value { font-size: 17px; }
+  /* 92px хвоста нужны там, где под кнопкой всплывают тосты; на задании
+     это чистая потеря высоты — больше, чем целый вариант ответа */
+  .screen--question, .screen--reveal { padding-top: 8px; padding-bottom: 14px; }
+  .hud { padding: 6px 10px; gap: 6px; }
+  .hud__value { font-size: 17px; line-height: 1.2; }
+  .hud__score { padding: 4px 14px; }
   .hud__team { display: none; }
   .btn--primary { width: 100%; }
   .settings-wrap { right: 10px; bottom: 10px; }
+  /* задание занимает ровно экран, и шестерёнка накрыла бы последний вариант;
+     между заданиями — на разборе, карте, в лобби — она на месте */
+  #app[data-screen="question"] ~ .settings-wrap { display: none; }
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {

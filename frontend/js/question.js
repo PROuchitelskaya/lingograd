@@ -5,10 +5,24 @@ import { h, letterOf, mount } from './ui.js';
 import { sfx } from './audio.js';
 import { keeper } from './art.js';
 
+/** Сколько карточка не принимает нажатия после появления (мс). */
+const TAP_GUARD_MS = 400;
+
+/** Пауза перед отправкой у типов с выбором одним касанием (мс).
+ *  Раньше одно касание отправляло ответ безвозвратно, и случайный тап
+ *  становился окончательным ответом. Теперь выбор можно переставить. */
+const SEND_DELAY_MS = 700;
+
 /**
  * @returns {{node: HTMLElement, lock(): void, unlock(): void, showResult(res): void}}
  */
 export function buildQuestion(q, { onSubmit }) {
+  // Первые мгновения жизни карточки нажатия не принимаются: экран выезжает
+  // почти полвины секунды, и палец, отпущенный над только что подменённым
+  // заданием, засчитывался как выбор варианта.
+  const bornAt = performance.now();
+  const tooEarly = () => performance.now() - bornAt < TAP_GUARD_MS;
+
   let payload = null;
   let locked = false;
   let allowEmpty = false;      // пустой набор запятых — тоже ответ
@@ -22,6 +36,8 @@ export function buildQuestion(q, { onSubmit }) {
   const feedback = h('div', { class: 'q-feedback', role: 'status', 'aria-live': 'polite' });
   const body = h('div', { class: 'q-body' });
 
+  let sendTimer = null;
+
   function setPayload(value, { instant = false } = {}) {
     payload = value;
     const ready = value !== null && value !== undefined &&
@@ -29,11 +45,15 @@ export function buildQuestion(q, { onSubmit }) {
       !(typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0) &&
       !(typeof value === 'string' && !value.trim());
     submitBtn.disabled = locked || !ready;
-    if (instant && ready) fire();
+    if (instant && ready) {
+      clearTimeout(sendTimer);
+      node.classList.add('is-sending');
+      sendTimer = setTimeout(() => { node.classList.remove('is-sending'); fire(); }, SEND_DELAY_MS);
+    }
   }
 
   function fire() {
-    if (locked || payload === null || payload === undefined) return;
+    if (locked || tooEarly() || payload === null || payload === undefined) return;
     locked = true;
     submitBtn.disabled = true;
     node.classList.add('is-answered');
@@ -57,7 +77,7 @@ export function buildQuestion(q, { onSubmit }) {
     const cards = q.answers.map((text, i) => h('button', {
       class: 'answer', type: 'button', dataset: { index: i },
       onClick: (e) => {
-        if (locked) return;
+        if (locked || tooEarly()) return;
         sfx.select();
         body.querySelectorAll('.answer').forEach((c) => c.classList.remove('is-picked'));
         e.currentTarget.classList.add('is-picked');
@@ -79,7 +99,7 @@ export function buildQuestion(q, { onSubmit }) {
       opts.map((o, i) => h('button', {
         class: `answer ${o.cls}`, type: 'button', dataset: { index: i },
         onClick: (e) => {
-          if (locked) return;
+          if (locked || tooEarly()) return;
           sfx.select();
           body.querySelectorAll('.answer').forEach((c) => c.classList.remove('is-picked'));
           e.currentTarget.classList.add('is-picked');
@@ -98,7 +118,7 @@ export function buildQuestion(q, { onSubmit }) {
         q.answers.map((text, i) => h('button', {
           class: 'answer answer--multi', type: 'button',
           onClick: (e) => {
-            if (locked) return;
+            if (locked || tooEarly()) return;
             sfx.select();
             picked.has(i) ? picked.delete(i) : picked.add(i);
             e.currentTarget.classList.toggle('is-picked', picked.has(i));
@@ -159,7 +179,7 @@ export function buildQuestion(q, { onSubmit }) {
           type: 'button',
           style: linked ? { borderColor: COLORS[i % COLORS.length] } : {},
           onClick: () => {
-            if (locked) return;
+            if (locked || tooEarly()) return;
             sfx.select();
             if (linked) delete links[i];
             activeLeft = activeLeft === i ? null : i;
@@ -177,7 +197,7 @@ export function buildQuestion(q, { onSubmit }) {
           class: `match__item ${owner !== undefined ? 'is-linked' : ''}`, type: 'button',
           style: owner !== undefined ? { borderColor: COLORS[owner % COLORS.length] } : {},
           onClick: () => {
-            if (locked) return;
+            if (locked || tooEarly()) return;
             if (owner !== undefined) { delete links[owner]; return redraw(); }
             if (activeLeft === null) return;
             sfx.select();
@@ -232,7 +252,7 @@ export function buildQuestion(q, { onSubmit }) {
             class: `punct__gap ${commas.has(i) ? 'is-on' : ''}`, type: 'button',
             'aria-label': commas.has(i) ? 'Убрать запятую' : 'Поставить запятую',
             onClick: () => {
-              if (locked) return;
+              if (locked || tooEarly()) return;
               sfx.select();
               commas.has(i) ? commas.delete(i) : commas.add(i);
               redraw();
@@ -262,14 +282,14 @@ export function buildQuestion(q, { onSubmit }) {
       mount(slots, used.length
         ? used.map((li, pos) => h('button', {
             class: 'tile tile--slot', type: 'button',
-            onClick: () => { if (locked) return; used.splice(pos, 1); sfx.select(); redraw(); },
+            onClick: () => { if (locked || tooEarly()) return; used.splice(pos, 1); sfx.select(); redraw(); },
           }, q.letters[li]))
         : h('span', { class: 'build__empty' }, 'Нажимайте на буквы'));
 
       mount(pool, q.letters.map((ch, i) => h('button', {
         class: `tile ${used.includes(i) ? 'is-used' : ''}`, type: 'button',
         disabled: used.includes(i) || locked,
-        onClick: () => { if (locked) return; used.push(i); sfx.select(); redraw(); },
+        onClick: () => { if (locked || tooEarly()) return; used.push(i); sfx.select(); redraw(); },
       }, ch)));
 
       setPayload(used.map((i) => q.letters[i]).join(''));
@@ -278,7 +298,7 @@ export function buildQuestion(q, { onSubmit }) {
     mount(body, slots, pool,
       h('button', {
         class: 'btn btn--ghost btn--small', type: 'button',
-        onClick: () => { if (locked) return; used.length = 0; redraw(); },
+        onClick: () => { if (locked || tooEarly()) return; used.length = 0; redraw(); },
       }, 'Стереть'));
     redraw();
   }
@@ -293,7 +313,7 @@ export function buildQuestion(q, { onSubmit }) {
       mount(line, q.tokens.map((tok, i) => h('button', {
         class: `token ${picked.has(i) ? 'is-picked' : ''}`, type: 'button',
         onClick: () => {
-          if (locked) return;
+          if (locked || tooEarly()) return;
           sfx.select();
           if (!multi) picked.clear();
           picked.has(i) ? picked.delete(i) : picked.add(i);
@@ -324,10 +344,27 @@ export function buildQuestion(q, { onSubmit }) {
 
   return {
     node,
-    lock() { locked = true; submitBtn.disabled = true; },
-    unlock() { locked = false; node.classList.remove('is-answered'); },
+    // is-answered здесь важен не только для вида: он же гасит нажатия
+    // по вариантам, когда карточка восстановлена уже отвеченной
+    lock() {
+      clearTimeout(sendTimer);
+      node.classList.remove('is-sending');
+      locked = true;
+      submitBtn.disabled = true;
+      node.classList.add('is-answered');
+    },
+    unlock() { locked = false; node.classList.remove('is-answered', 'is-correct', 'is-wrong'); },
     /** Ответ сервера: правильно / почти / без попыток. */
-    showResult(res) {
+    showResult(res, { restored = false } = {}) {
+      node.classList.remove('is-correct', 'is-wrong', 'is-shake');
+      if (restored) {
+        // карточку показали заново (переподключение или возврат учителя):
+        // какой вариант был выбран, мы не знаем, поэтому красить нечего
+        mount(feedback, h('div', { class: 'verdict verdict--try' },
+          h('span', { class: 'verdict__mark' }, '✓'),
+          h('span', null, 'Ответ уже принят')));
+        return;
+      }
       if (res.correct) {
         node.classList.add('is-correct');
         mount(feedback, h('div', { class: 'verdict verdict--ok' },
@@ -344,7 +381,10 @@ export function buildQuestion(q, { onSubmit }) {
           h('span', { class: 'verdict__mark' }, '↻'),
           h('span', null, `Почти! Попробуйте ещё раз${res.hint ? '. ' + res.hint : ''}`)));
         body.querySelectorAll('.is-picked').forEach((n) => n.classList.remove('is-picked'));
-        resetState();   // иначе к новому выбору молча приклеится старый
+        // у single_choice, true_false и text_input своего resetState нет,
+        // поэтому старый выбор гасим здесь — иначе он молча уедет второй раз
+        payload = null;
+        resetState();
         submitBtn.disabled = payload === null || payload === undefined;
         return;
       }

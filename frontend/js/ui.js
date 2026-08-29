@@ -74,8 +74,16 @@ export function ghostButton(label, onClick, opts = {}) {
 }
 
 /** Плавная смена экрана: старый уезжает, новый появляется (ТЗ §45). */
+/** Сколько экран не принимает нажатия после появления (мс). */
+const ENTER_LOCK_MS = 420;
+
 export function swapScreen(root, node, key) {
   node.classList.add('screen-enter');
+  // Экран выезжает 420 мс, и всё это время он прозрачен. Палец, отпущенный
+  // над подменённым экраном, попадал в вариант ответа — у single_choice это
+  // мгновенно уходило на сервер, и ученик видел задание с уже отмеченным
+  // ответом, которого не выбирал. Поэтому вход экрана глухой к нажатиям.
+  node.classList.add('screen-locked');
   mount(root, node);
   root.dataset.screen = key || '';
   // В фоновой вкладке requestAnimationFrame не выполняется, и экран остался бы
@@ -83,6 +91,7 @@ export function swapScreen(root, node, key) {
   const reveal = () => node.classList.remove('screen-enter');
   requestAnimationFrame(reveal);
   setTimeout(reveal, 80);
+  setTimeout(() => node.classList.remove('screen-locked'), ENTER_LOCK_MS);
   return node;
 }
 
