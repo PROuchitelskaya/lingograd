@@ -1631,6 +1631,61 @@
 .winner__dot { width: 30px; height: 30px; flex: none; }
 .winner__name { display: flex; align-items: center; gap: 12px; }
 
+/* Таблица игроков в разборе: у каждой колонки заголовок, у чисел — смысл.
+   Раньше «Хранитель 1  22» читалось как два номера подряд. */
+.ptable { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.ptable__head, .ptable__row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 78px 78px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+}
+.ptable__head {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-55);
+  padding-bottom: 2px;
+}
+.ptable__head span:nth-child(3),
+.ptable__head span:nth-child(4) { text-align: right; }
+.ptable__row {
+  background: var(--ink-06);
+  border-radius: var(--r-sm);
+  font-size: 15px;
+  font-weight: 700;
+}
+.ptable__place { font-weight: 800; color: var(--orange-ink); text-align: center; }
+.ptable__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ptable__score {
+  text-align: right;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--blue);
+}
+.ptable__correct { text-align: right; font-size: 13px; font-weight: 600; color: var(--ink-70); }
+
+/* Финальный экран ученика: места команд и награды вместе */
+.awards__rank { width: 100%; }
+.results__list--compact { width: 100%; gap: 8px; }
+.results__list--compact .results__row {
+  grid-template-columns: 34px 26px minmax(0, 1fr) auto 52px;
+  padding: 10px 14px;
+  animation: none;
+}
+.results__list--compact .results__row.is-mine { box-shadow: 0 0 0 3px rgba(49,85,217,.28); }
+.results__list--compact .results__acc { font-size: 14px; color: var(--ink-70); text-align: right; }
+.screen--awards .sect__title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  color: var(--ink-55);
+  margin: 6px 0 0;
+  text-align: center;
+}
+
 /* Знак района: одинаковый на любом устройстве, в отличие от системных эмодзи. */
 .dicon { width: 100%; height: 100%; display: block; }
 .mapnode__icon, .intro__icon, .qtop__icon,

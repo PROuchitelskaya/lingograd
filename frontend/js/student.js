@@ -583,8 +583,27 @@ function renderResults() {
 
 function renderAwards() {
   const team = myTeam();
+  const ranking = state.ranking || [];
   const node = h('div', { class: 'screen screen--awards' },
-    h('h1', { class: 'display' }, 'СПЕЦИАЛЬНЫЕ НАГРАДЫ'),
+    h('h1', { class: 'display' }, 'ИТОГИ ИГРЫ'),
+
+    // рейтинг и награды на одном экране: раньше места показывались
+    // на предыдущем экране и к моменту наград уже пропадали
+    ranking.length ? h('div', { class: 'awards__rank' },
+      h('h2', { class: 'sect__title' }, 'МЕСТА КОМАНД'),
+      h('div', { class: 'results__list results__list--compact' },
+        ranking.map((t) => h('div', {
+          class: `results__row ${t.place === 1 ? 'is-winner' : ''} ${team && t.id === team.id ? 'is-mine' : ''}`,
+          style: { '--team': t.color },
+        },
+          h('span', { class: 'results__place' }, `${t.place}`),
+          h('span', { class: 'results__emoji', html: teamDot(t.color) }),
+          h('span', { class: 'results__name' }, t.name),
+          h('span', { class: 'results__score' }, `${t.score}`),
+          h('span', { class: 'results__acc' }, `${Math.round(t.accuracy * 100)}%`)))))
+      : null,
+
+    h('h2', { class: 'sect__title' }, 'НАГРАДЫ'),
     h('div', { class: 'awards' },
       (state.awards || []).map((a) => h('div', { class: 'award' },
         h('span', { class: 'award__emoji' }, a.emoji),

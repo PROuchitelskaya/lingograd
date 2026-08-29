@@ -626,11 +626,19 @@ async function loadAnalytics() {
           h('span', { class: 'anal__q' }, q.question),
           h('span', { class: 'anal__topic' }, q.topic)))),
       h('div', { class: 'side__title' }, 'ЛУЧШИЕ ИГРОКИ'),
-      h('div', { class: 'anal__list' },
-        (data.players || []).slice(0, 5).map((p, i) => h('div', { class: 'anal__row' },
-          h('span', { class: 'anal__pct' }, `${i + 1}`),
-          h('span', { class: 'anal__q' }, p.name),
-          h('span', { class: 'anal__topic' }, `${p.score} · ${p.correct}/${p.answered}`)))));
+      // «Хранитель 1  22» читалось как два номера подряд, поэтому у колонок
+      // появились заголовки, а у чисел — единицы измерения
+      h('div', { class: 'ptable' },
+        h('div', { class: 'ptable__head' },
+          h('span', null, 'Место'),
+          h('span', null, 'Игрок'),
+          h('span', null, 'Кристаллы'),
+          h('span', null, 'Верных')),
+        (data.players || []).slice(0, 5).map((p, i) => h('div', { class: 'ptable__row' },
+          h('span', { class: 'ptable__place' }, `${i + 1}`),
+          h('span', { class: 'ptable__name' }, p.name),
+          h('span', { class: 'ptable__score' }, `${p.score}`),
+          h('span', { class: 'ptable__correct' }, `${p.correct} из ${p.answered}`)))));
   } catch {
     mount(box, h('p', { class: 'muted' }, 'Разбор появится после первых ответов'));
   }
