@@ -11,6 +11,7 @@ import json
 import socket
 import sys
 import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent
@@ -35,7 +36,24 @@ HOST = os.environ.get("LINGOGRAD_HOST", "0.0.0.0")
 PORT = int(os.environ.get("LINGOGRAD_PORT", "4190"))
 PUBLIC_URL = os.environ.get("LINGOGRAD_PUBLIC_URL", "").rstrip("/")
 
-app = FastAPI(title="Лингоград", docs_url=None, redoc_url=None)
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """Фоновая уборка. Раньше комнаты чистились только в момент, когда кто-то
+    создавал новую игру: после последнего урока мусор висел в памяти до утра."""
+    async def janitor():
+        while True:
+            await asyncio.sleep(SWEEP_EVERY_S)
+            try:
+                hub.sweep()
+            except Exception as exc:
+                print(f"[sweep] {type(exc).__name__}: {exc}")
+
+    task = asyncio.create_task(janitor())
+    yield
+    task.cancel()
+
+
+app = FastAPI(title="Лингоград", docs_url=None, redoc_url=None, lifespan=lifespan)
 
 
 # --------------------------------------------------------------------------
@@ -43,19 +61,36 @@ app = FastAPI(title="Лингоград", docs_url=None, redoc_url=None)
 # --------------------------------------------------------------------------
 
 class Connection:
-    __slots__ = ("ws", "role", "player_id", "alive")
+    __slots__ = ("ws", "role", "player_id", "alive", "last_seen")
 
     def __init__(self, ws: WebSocket, role: str, player_id: str | None):
         self.ws = ws
         self.role = role
         self.player_id = player_id
         self.alive = True
+        # телефон, потерявший вайфай, не закрывает соединение — сервер считал бы
+        # его живым бесконечно и держал комнату в памяти. Клиент пингует раз
+        # в 15 секунд, поэтому молчание дольше минуты означает, что его нет.
+        self.last_seen = time.time()
+
+
+# Комната живёт в памяти процесса, и раньше она висела там шесть часов после
+# создания — даже когда урок давно кончился и все закрыли вкладки. За учебный
+# день таких комнат набирались сотни, и память процесса росла до сотен мегабайт.
+# Теперь отсчёт идёт не от создания, а от момента, когда комната опустела:
+# длинный урок ничего не оборвёт, а пустая комната освободит память быстро.
+EMPTY_DONE_MS = 10 * 60_000     # игра доиграна, все ушли
+EMPTY_IDLE_MS = 30 * 60_000     # все ушли, но игра не закончена (перемена, потеря связи)
+HARD_LIMIT_MS = 6 * 3600_000    # предел на всякий случай: комната не живёт дольше
+SWEEP_EVERY_S = 120             # как часто прибираться
+SILENT_AFTER_S = 75             # соединение молчит дольше — считаем оборванным
 
 
 class Hub:
     def __init__(self):
         self.sessions: dict[str, GameSession] = {}
         self.conns: dict[str, list[Connection]] = {}
+        self.empty_since: dict[str, int] = {}   # когда комната осталась без людей
 
     # --- сессии ---------------------------------------------------------
 
@@ -72,15 +107,35 @@ class Hub:
     def get(self, code: str) -> GameSession | None:
         return self.sessions.get((code or "").strip().upper())
 
-    def sweep(self) -> None:
-        """Убирает комнаты старше 6 часов."""
-        cutoff = int(time.time() * 1000) - 6 * 3600_000
+    def close(self, code: str) -> None:
+        s = self.sessions.pop(code, None)
+        if s and s._task:
+            s._task.cancel()
+        self.conns.pop(code, None)
+        self.empty_since.pop(code, None)
+
+    def sweep(self) -> int:
+        """Выбрасывает молчащие соединения и убирает опустевшие комнаты."""
+        now = int(time.time() * 1000)
+        silent = time.time() - SILENT_AFTER_S
+        for code, conns in list(self.conns.items()):
+            for c in list(conns):
+                if c.last_seen < silent:
+                    self.drop(code, c)
+        closed = 0
         for code, s in list(self.sessions.items()):
-            if s.created_at < cutoff:
-                if s._task:
-                    s._task.cancel()
-                self.sessions.pop(code, None)
-                self.conns.pop(code, None)
+            if self.conns.get(code):
+                self.empty_since.pop(code, None)      # люди на месте
+                if now - s.created_at < HARD_LIMIT_MS:
+                    continue
+            else:
+                since = self.empty_since.setdefault(code, now)
+                done = s.phase in ("results", "awards")
+                if now - since < (EMPTY_DONE_MS if done else EMPTY_IDLE_MS)                         and now - s.created_at < HARD_LIMIT_MS:
+                    continue
+            self.close(code)
+            closed += 1
+        return closed
 
     # --- рассылка -------------------------------------------------------
 
@@ -248,6 +303,7 @@ async def ws_endpoint(ws: WebSocket):
 
         while True:
             msg = json.loads(await ws.receive_text())
+            conn.last_seen = time.time()
             t = msg.get("t")
 
             if t == "ping":
@@ -283,6 +339,13 @@ async def ws_endpoint(ws: WebSocket):
             if not still_open:
                 player.connected = False
                 await hub.push_state(code)
+        # доигранную комнату, из которой вышел последний человек, держать незачем:
+        # результаты уже показаны, вернуться в неё никто не может
+        if code and not hub.conns.get(code):
+            done = session and session.phase in ("results", "awards")
+            hub.empty_since[code] = int(time.time() * 1000) - (EMPTY_DONE_MS if done else 0)
+            if done:
+                hub.close(code)
 
 
 # --------------------------------------------------------------------------
