@@ -6,7 +6,7 @@ import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
 import * as net from './net.js';
 import * as fx from './fx.js';
 import { toSVG } from './qr.js';
-import { chaosVillain, chaosTower } from './art.js';
+import { chaosVillain, chaosTower, cityMap, schoolBell } from './art.js';
 
 const root = document.getElementById('app');
 let state = null;
@@ -295,6 +295,114 @@ function teacherBody(q, answer) {
   return null;
 }
 
+/** Заставки между заданиями — те же, что у класса на телефонах.
+ *  Нужны, чтобы играть можно было и без телефонов: с одного проектора. */
+function teacherPhase(m, phaseLabel) {
+  const p = state.phase;
+
+  if (p === 'september') {
+    return h('div', { class: 'teacherq teacherq--phase' },
+      h('div', { class: 'sept__bell', html: schoolBell() }),
+      h('h1', { class: 'display display--gold' }, 'С 1 СЕНТЯБРЯ! 🎉'),
+      h('p', { class: 'lead' }, 'Новый учебный год начинается прямо сейчас.'),
+      h('p', { class: 'lead lead--dim' }, 'Но в Лингограде что-то пошло не так…'));
+  }
+
+  if (p === 'story') {
+    const lines = [
+      'Ха-ха! С первым сентября, ученики!',
+      'Я решил немного изменить школьные правила.',
+      'Буквы перепутаны. Запятые разбежались. Окончания исчезли.',
+      'Если вы хотите спасти Лингоград — попробуйте!',
+    ];
+    const box = h('div', { class: 'story__lines' });
+    lines.forEach((line, i) => setTimeout(() => {
+      box.append(h('p', { class: 'story__line' }, line));
+    }, 900 + i * 1500));
+    return h('div', { class: 'teacherq teacherq--story' },
+      h('div', { class: 'story__villain', html: chaosVillain() }),
+      h('div', { class: 'story__text' },
+        h('div', { class: 'story__name' }, 'ХАОС'),
+        box));
+  }
+
+  if (p === 'map') {
+    return h('div', { class: 'teacherq teacherq--map' },
+      h('div', { class: 'mapwrap' },
+        h('div', { class: 'mapwrap__bg', html: cityMap() }),
+        h('div', { class: 'mapnodes' },
+          (state.map || []).map((node, i) => h('div', {
+            class: `mapnode mapnode--${node.state} mapnode--${i}`,
+          },
+            h('span', { class: 'mapnode__icon' }, node.icon),
+            h('span', { class: 'mapnode__title' }, node.title),
+            h('span', { class: 'mapnode__state' },
+              node.state === 'done' ? '✓ восстановлен'
+                : node.state === 'active' ? 'следующая цель' : 'закрыт'))))),
+      h('div', { class: 'mapfoot' },
+        h('span', { class: 'chip' }, `Следующая миссия: ${m.title}`)));
+  }
+
+  if (p === 'mission_intro') {
+    return h('div', { class: 'teacherq teacherq--intro' },
+      h('div', { class: 'intro' },
+        h('div', { class: 'intro__icon' }, m.icon),
+        h('div', { class: 'intro__label' }, `МИССИЯ ${m.index + 1} ИЗ ${m.of}`),
+        h('h1', { class: 'display' }, m.title),
+        h('p', { class: 'lead' }, m.subtitle),
+        h('p', { class: 'muted muted--center' }, m.brief),
+        h('div', { class: 'intro__meta' },
+          h('span', { class: 'chip' }, `${m.questions} заданий`),
+          h('span', { class: 'chip' }, m.district === 'tower'
+            ? 'Финальная битва' : 'Работаем командой'))));
+  }
+
+  if (p === 'mission_complete') {
+    const rep = state.mission_report || {};
+    return h('div', { class: 'teacherq teacherq--phase' },
+      h('div', { class: 'done' },
+        h('div', { class: 'done__icon' }, rep.icon || '✅'),
+        h('h1', { class: 'display' }, 'РАЙОН ВОССТАНОВЛЕН'),
+        h('p', { class: 'lead' }, rep.title || ''),
+        h('div', { class: 'done__progress' },
+          `${rep.restored || 1} из ${rep.of || 5} районов Лингограда снова светятся`),
+        h('div', { class: 'board' },
+          (rep.teams || []).map((t, i) => h('div', { class: 'board__row' },
+            h('span', { class: 'board__place' }, i + 1),
+            h('span', { class: 'board__emoji' }, t.emoji),
+            h('span', { class: 'board__name' }, t.name),
+            h('span', { class: 'board__score' }, t.score))))));
+  }
+
+  if (p === 'victory') {
+    return h('div', { class: 'teacherq teacherq--phase' },
+      h('div', { class: 'victory__bell', html: schoolBell() }),
+      h('h1', { class: 'display display--gold' }, 'ЛИНГОГРАД СПАСЁН! 🎉'),
+      h('p', { class: 'lead' }, 'Первый урок нового учебного года начинается с победы!'),
+      h('div', { class: 'victory__title' }, 'ВЫ — ХРАНИТЕЛИ ЯЗЫКА'),
+      h('div', { class: 'victory__letters' },
+        [...'ЛИНГОГРАД'].map((ch, i) => h('span', {
+          class: 'victory__letter', style: { animationDelay: `${i * 90}ms` },
+        }, ch))));
+  }
+
+  if (p === 'reveal') {
+    const r = state.reveal || {};
+    return h('div', { class: 'teacherq teacherq--phase' },
+      m.district === 'tower' ? h('div', { class: 'teacherq__art', html: chaosTower(state.chaos_hp) }) : null,
+      h('div', { class: 'reveal reveal--teacher' },
+        h('div', { class: 'reveal__label' }, '✓ ПРАВИЛЬНЫЙ ОТВЕТ'),
+        h('div', { class: 'reveal__answer' }, r.correct_text || '—'),
+        r.explanation ? h('p', { class: 'reveal__why' }, r.explanation) : null,
+        h('div', { class: 'reveal__stat' },
+          `Ответили верно: ${r.correct || 0} из ${r.answered || 0}`)));
+  }
+
+  return h('div', { class: 'teacherq teacherq--phase' },
+    h('h1', { class: 'display' }, phaseLabel),
+    h('p', { class: 'lead' }, m.subtitle));
+}
+
 function renderLive() {
   const m = state.mission;
   const phaseLabel = {
@@ -347,16 +455,7 @@ function renderLive() {
                     `${state.answered || 0} из ${state.online || 0}`)),
                 h('div', { class: 'answered__track' },
                   h('span', { class: 'answered__fill', id: 't-answered-bar' }))))
-          : h('div', { class: 'teacherq teacherq--phase' },
-              state.phase === 'story' ? h('div', { class: 'teacherq__art', html: chaosVillain() }) : null,
-              m.district === 'tower' && state.phase !== 'victory'
-                ? h('div', { class: 'teacherq__art', html: chaosTower(state.chaos_hp) }) : null,
-              h('h1', { class: 'display' }, phaseLabel),
-              h('p', { class: 'lead' }, state.phase === 'reveal' && state.reveal
-                ? `Правильно: ${state.reveal.correct_text || ''}`
-                : m.subtitle),
-              state.phase === 'reveal' && state.reveal?.explanation
-                ? h('p', { class: 'muted' }, state.reveal.explanation) : null),
+          : teacherPhase(m, phaseLabel),
 
         m.district === 'tower' ? h('div', { class: 'chaosbar chaosbar--teacher' },
           h('div', { class: 'chaosbar__label' }, '❤️ ЭНЕРГИЯ ХАОСА'),

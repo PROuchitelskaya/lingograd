@@ -118,44 +118,74 @@ export function cityScene() {
 
 /** Хаос — смешной цифровой злодей из букв и клякс (ТЗ §15). */
 export function chaosVillain(mood = 'normal') {
-  const eye = mood === 'hurt' ? 8 : 13;
+  // Силуэт в шляпе с единственным горящим глазом: всё, что видно, —
+  // тень на фоне багрового зарева и трещин, расползающихся по небу.
+  const hurt = mood === 'hurt';
   return `
-<svg class="art art--chaos" viewBox="0 0 320 300" aria-hidden="true">
+<svg class="art art--chaos chaos${hurt ? ' is-hurt' : ''}" viewBox="0 0 320 320" aria-hidden="true">
   <defs>
-    <linearGradient id="chaosBody" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#7357C8"/><stop offset="100%" stop-color="#3155D9"/>
+    <radialGradient id="chaosSky" cx="50%" cy="46%" r="62%">
+      <stop offset="0%" stop-color="#8E1220"/>
+      <stop offset="55%" stop-color="#43060F"/>
+      <stop offset="100%" stop-color="#160309"/>
+    </radialGradient>
+    <linearGradient id="chaosEye" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="38%" stop-color="#FF6A7A"/>
+      <stop offset="100%" stop-color="#C4102A"/>
     </linearGradient>
-    <filter id="chaosGlow"><feGaussianBlur stdDeviation="6" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="chaosBlur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <filter id="chaosEyeGlow" x="-160%" y="-160%" width="420%" height="420%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="chaosFrame"><rect x="0" y="0" width="320" height="320" rx="26"/></clipPath>
   </defs>
-  <g filter="url(#chaosGlow)">
-    <path d="M160 26 C232 26 276 76 276 142 C276 210 232 258 160 258
-             C88 258 44 210 44 142 C44 76 88 26 160 26 Z" fill="url(#chaosBody)"/>
-  </g>
-  <path d="M64 118 q22 -16 40 2 t42 -4 t44 6 t46 -8" stroke="#FFC94A" stroke-width="5"
-        fill="none" opacity=".55" stroke-linecap="round"/>
-  <g fill="#FFF8ED">
-    <circle cx="118" cy="130" r="26"/><circle cx="204" cy="130" r="26"/>
-  </g>
-  <g fill="#20243A">
-    <circle cx="124" cy="134" r="${eye}"/><circle cx="198" cy="134" r="${eye}"/>
-  </g>
-  <path d="M112 190 q48 ${mood === 'hurt' ? '-26' : '34'} 96 0" stroke="#FFF8ED" stroke-width="9"
-        fill="none" stroke-linecap="round"/>
-  <g font-family="Manrope,sans-serif" font-weight="800" fill="#FFC94A" font-size="22">
-    <text x="28" y="60" transform="rotate(-18 28 60)">Ж</text>
-    <text x="272" y="72" transform="rotate(16 272 72)">Э</text>
-    <text x="16" y="212" transform="rotate(12 16 212)">,</text>
-    <text x="286" y="206" transform="rotate(-14 286 206)">?</text>
-    <text x="150" y="16" transform="rotate(6 150 16)">Ъ</text>
-  </g>
-  <g fill="#20243A" opacity=".55">
-    <ellipse cx="76" cy="248" rx="20" ry="9"/><ellipse cx="246" cy="252" rx="15" ry="7"/>
+
+  <g clip-path="url(#chaosFrame)">
+    <rect width="320" height="320" fill="url(#chaosSky)"/>
+
+    <g class="chaos__cracks" stroke="#FF2E45" fill="none" stroke-linecap="round">
+      <path d="M246 8 L262 74 L238 104 L268 150 L250 196 L286 250" stroke-width="3" opacity=".85"/>
+      <path d="M282 40 L266 70 M258 118 L292 132 M262 210 L236 236" stroke-width="2" opacity=".6"/>
+      <path d="M46 26 L26 78 L58 108 L30 150" stroke-width="2.4" opacity=".55"/>
+      <path d="M18 196 L44 228 L20 262" stroke-width="2" opacity=".45"/>
+    </g>
+
+    <ellipse class="chaos__halo" cx="160" cy="150" rx="118" ry="104"
+             fill="#FF1B33" opacity=".22" filter="url(#chaosBlur)"/>
+
+    <g class="chaos__body" fill="#07060B">
+      <!-- плечи с рваными пиками -->
+      <path d="M18 320 L34 244 L62 268 L84 214 L112 250 L134 196
+               L160 236 L186 196 L208 250 L236 214 L258 268 L286 244 L302 320 Z"/>
+      <!-- голова -->
+      <ellipse cx="160" cy="150" rx="62" ry="58"/>
+      <!-- поля шляпы: широкие, с острыми концами -->
+      <path d="M160 96 C214 96 268 104 300 116 L246 122 L288 138
+               C246 152 202 158 160 158 C118 158 74 152 32 138 L74 122 L20 116
+               C52 104 106 96 160 96 Z"/>
+      <!-- тулья -->
+      <path d="M112 100 C112 46 128 18 160 18 C192 18 208 46 208 100
+               C192 92 128 92 112 100 Z"/>
+      <!-- клинья, свисающие из-под полей -->
+      <path d="M60 140 L96 154 L58 176 Z"/>
+      <path d="M92 150 L124 164 L96 186 Z"/>
+      <path d="M260 140 L224 154 L262 176 Z"/>
+      <path d="M228 150 L196 164 L224 186 Z"/>
+    </g>
+
+    <g class="chaos__eye" filter="url(#chaosEyeGlow)">
+      <path d="M132 ${hurt ? '160' : '156'} L188 ${hurt ? '160' : '156'}
+               A 28 ${hurt ? '9' : '17'} 0 0 1 132 ${hurt ? '160' : '156'} Z"
+            fill="url(#chaosEye)"/>
+    </g>
   </g>
 </svg>`;
 }
 
-/** Башня Хаоса: буквы вращаются вокруг ядра (ТЗ §26). */
 export function chaosTower(hp = 100) {
   const letters = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З', 'И', 'К'];
   const rings = letters.map((ch, i) => {

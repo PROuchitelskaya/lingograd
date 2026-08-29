@@ -165,7 +165,58 @@
   background: radial-gradient(circle at 50% 40%, #EDE7FF 0%, var(--paper) 70%);
 }
 
-.story__villain { width: min(260px, 58vw); animation: float 3.4s ease-in-out infinite; }
+.story__villain { width: min(300px, 66vw); filter: drop-shadow(0 18px 40px rgba(196,16,42,.45)); }
+
+/* ХАОС. Всё, что видно, — силуэт на зареве: тень дышит, зарево пульсирует,
+   трещины вспыхивают, глаз горит и изредка моргает. */
+.chaos { display: block; width: 100%; }
+.chaos__body {
+  transform-origin: 160px 300px;
+  animation: chaos-loom 5.2s ease-in-out infinite;
+}
+.chaos__halo { animation: chaos-breathe 3.6s ease-in-out infinite; transform-origin: 160px 150px; }
+.chaos__cracks { animation: chaos-spark 4.4s steps(1, end) infinite; }
+.chaos__eye {
+  transform-origin: 160px 156px;
+  animation: chaos-stare 3.1s ease-in-out infinite, chaos-blink 7.3s ease-in-out infinite;
+}
+.chaos.is-hurt .chaos__body { animation: chaos-flinch .6s var(--ease); }
+.chaos.is-hurt .chaos__halo { opacity: .1; }
+
+@keyframes chaos-loom {
+  0%, 100% { transform: rotate(-1.4deg) translateY(0); }
+  50%      { transform: rotate(1.4deg) translateY(-6px); }
+}
+@keyframes chaos-breathe {
+  0%, 100% { opacity: .18; transform: scale(.94); }
+  50%      { opacity: .34; transform: scale(1.06); }
+}
+@keyframes chaos-spark {
+  0%, 44%, 100% { opacity: 1; }
+  46%           { opacity: .35; }
+  48%           { opacity: 1; }
+  70%           { opacity: .5; }
+  72%           { opacity: 1; }
+}
+@keyframes chaos-stare {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+@keyframes chaos-blink {
+  0%, 88%, 100% { transform: scaleY(1); }
+  92%           { transform: scaleY(.08); }
+  96%           { transform: scaleY(1); }
+}
+@keyframes chaos-flinch {
+  0%   { transform: translateX(0) rotate(0); }
+  25%  { transform: translateX(-9px) rotate(-3deg); }
+  60%  { transform: translateX(7px) rotate(2deg); }
+  100% { transform: translateX(0) rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chaos__body, .chaos__halo, .chaos__cracks, .chaos__eye { animation: none; }
+}
 
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(-1deg); }
@@ -1382,6 +1433,28 @@
   font-size: 18px;
   font-weight: 600;
 }
+
+/* Заставки миссий на проекторе: те же экраны, что у класса в телефонах,
+   только крупнее — игра должна идти и без телефонов, с одного компьютера. */
+.teacherq--story {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  align-items: center;
+  gap: 32px;
+}
+.teacherq--story .story__villain { width: 100%; }
+.teacherq--story .story__name { font-size: 22px; }
+.teacherq--story .story__line { font-size: 22px; }
+
+.teacherq--map, .teacherq--intro { display: flex; flex-direction: column; gap: 20px; }
+.teacherq--map .mapwrap { min-height: 380px; }
+.teacherq--intro .intro__icon { font-size: 64px; }
+.teacherq--intro .display { font-size: clamp(32px, 4vw, 52px); }
+
+.teacherq--phase .done__icon { font-size: 64px; }
+.teacherq--phase .board { width: min(560px, 100%); margin: 0 auto; }
+.reveal--teacher { width: 100%; }
+.reveal--teacher .reveal__answer { font-size: clamp(24px, 3vw, 38px); }
 
 /* ------------------------------------------------------------- ПАУЗА §43 */
 
