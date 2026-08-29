@@ -707,6 +707,11 @@
 .bigverdict.is-ok { background: var(--green-soft); color: #226844; }
 .bigverdict.is-no { background: var(--yellow-soft); color: #8A5A12; }
 .bigverdict.is-skip { background: var(--ink-06); color: var(--ink-70); }
+/* на ночном фоне Башни и Архива серое по серому не читалось */
+.zone-chaos .bigverdict.is-skip, .zone-text .bigverdict.is-skip {
+  background: rgba(255,255,255,.18);
+  color: #FFF8ED;
+}
 
 .reveal {
   background: var(--white);
@@ -1223,23 +1228,159 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    /* обрезанный край списка читался как дефект вёрстки — растушёвываем,
+       чтобы было видно: варианты продолжаются ниже */
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent);
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent);
+  }
+  .screen--question .q-body:not([data-scrollable="1"]) {
+    mask-image: none;
+    -webkit-mask-image: none;
   }
   .screen--question .mini--floating { display: none; }
-  /* башня — сюжетный якорь района, её не прячем, но на телефоне
-     она занимала больше 200px и выдавливала варианты за край */
-  .screen--question .tower__art { max-height: 96px; overflow: hidden; }
-  .screen--question .tower__art svg { max-height: 96px; }
+  /* В Башне сверху добавляется полоса энергии, а снизу сама башня —
+     вместе они съедали треть экрана, и варианты ответа уходили под кнопку.
+     Башню уводим на задний план: она видна, но места в потоке не занимает,
+     а полоса энергии становится тонкой строкой. */
+  .screen--question { position: relative; }
+  .screen--question .tower__art {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    z-index: 0;
+    margin: 0;
+    opacity: .5;
+    pointer-events: none;
+  }
+  .screen--question .tower__art .art { width: 132px; }
+  /* мост Синтаксического района занимал место так же, как башня —
+     уводим его на задний план тем же приёмом */
+  .screen--question .bridge__art {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    transform: translateX(-50%);
+    width: 210px;
+    max-width: 62vw;
+    z-index: 0;
+    margin: 0;
+    opacity: .5;
+    pointer-events: none;
+  }
+
+  /* сортировка — самый высокий тип: строки ужимаем, кнопки-стрелки
+     остаются 48px, чтобы по ним попадал палец */
+  .sortable { gap: 6px; }
+  .sortable__row { min-height: 52px; padding: 6px 8px; gap: 8px; }
+  .sortable__text { font-size: 15px; line-height: 1.3; }
+  .sortable__num { width: 26px; }
+  /* у сортировки подсказка повторяет формулировку задания —
+     на телефоне это лишняя строка, из-за которой уезжал последний пункт */
+  .q-card--sort .q-tip { display: none; }
+  /* у выбора нескольких вариантов подсказка нужна, ужимаем сами карточки */
+  .q-card--multiple_choice .answer { padding: 8px 12px; }
+  .punct { padding: 12px; gap: 2px; }
+  .punct__gap { min-height: 42px; }
+  .screen--question .hud,
+  .screen--question .qtop,
+  .screen--question .chaosbar,
+  .screen--question .q-card { position: relative; z-index: 1; }
+
+  .chaosbar { gap: 3px; }
+  .chaosbar__label { font-size: 11px; letter-spacing: .06em; }
+  .chaosbar__track { height: 10px; }
+
+  /* кнопка ответа занимала 64px — на телефоне это целый вариант ответа */
+  .q-submit { min-height: 52px; font-size: 17px; }
   .screen--question .bridge__art { max-width: 220px; margin: 0 auto; }
 
   .q-card { padding: 14px; gap: 10px; }
   .q-card__question { line-height: 1.2; }
   .q-card__text { padding: 10px 12px; font-size: 16px; margin: 0; }
-  .answers { gap: 8px; }
+  .answers { gap: 7px; }
   .answer { padding: 10px 14px; border-width: 2px; gap: 10px; }
-  .answer__keeper { width: 34px; height: 40px; }
+  /* высота варианта = хранитель + отступы; 36px держат цель по касанию
+     в 56px и дают уместить пятый вариант без прокрутки */
+  .answer__keeper { width: 30px; height: 36px; }
+  .q-tip { font-size: 13px; }
   .qtimer { width: 44px; height: 44px; }
   .qtimer__num { font-size: 16px; }
   .match__item { font-size: 15px; }
+}
+
+/* Задание на проекторе: класс должен видеть то же, что у себя в телефонах.
+   Кегли рассчитаны на чтение с задних парт. */
+.tq-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.tq-list__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: var(--r-md);
+  background: var(--ink-06);
+  font-size: 20px;
+  font-weight: 600;
+}
+.tq-list__num {
+  width: 30px;
+  flex: none;
+  text-align: center;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.tq-match { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tq-match__col { display: flex; flex-direction: column; gap: 8px; }
+.tq-match__item {
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  background: var(--ink-06);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.tq-punct {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 16px;
+  border-radius: var(--r-md);
+  background: var(--yellow-soft);
+  font-size: 24px;
+  font-weight: 600;
+}
+.tq-punct__word { padding: 2px 2px; }
+.tq-punct__gap {
+  min-width: 26px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--orange-ink);
+  background: rgba(242,140,56,.18);
+  border-radius: 6px;
+  padding: 2px 4px;
+}
+
+.tq-tokens { display: flex; flex-wrap: wrap; gap: 8px; }
+.tq-token {
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  background: var(--white);
+  border: 2px solid var(--ink-12);
+  font-size: 20px;
+  font-weight: 600;
+}
+.tq-token--letter { font-size: 24px; font-weight: 800; min-width: 46px; text-align: center; }
+
+.tq-input {
+  padding: 14px 18px;
+  border-radius: var(--r-md);
+  border: 2px dashed var(--ink-12);
+  color: var(--ink-55);
+  font-size: 18px;
+  font-weight: 600;
 }
 
 /* ------------------------------------------------------------- ПАУЗА §43 */

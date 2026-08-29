@@ -4,11 +4,9 @@
 import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
          readLocal, saveLocal, players } from './ui.js';
 import * as net from './net.js';
-import { sfx, unlock, startMusic } from './audio.js';
 import * as fx from './fx.js';
 import { toSVG } from './qr.js';
 import { chaosVillain, chaosTower } from './art.js';
-import { settingsButton } from './settings.js';
 
 const root = document.getElementById('app');
 let state = null;
@@ -43,7 +41,7 @@ function wireNet() {
     state.chaos_hp = msg.chaos_hp;
     updateLive();
   });
-  net.on('bell', () => { sfx.bell(); toast('Прозвенел звонок — время урока вышло', 'warn'); });
+  net.on('bell', () => toast('Прозвенел звонок — время урока вышло', 'warn'));
   net.on('error', (msg) => {
     toast(msg.message || 'Ошибка', 'error');
     if (msg.code === 'no_session' || msg.code === 'bad_token') {
@@ -76,7 +74,6 @@ function renderSetup() {
           [...e.currentTarget.parentElement.children].forEach((c) => c.classList.remove('is-on'));
           e.currentTarget.classList.add('is-on');
           onPick(v);
-          unlock(); sfx.select();
         },
       }, format(v))));
 
@@ -119,7 +116,6 @@ function renderSetup() {
           const data = await res.json();
           session = data;
           saveLocal('lg_teacher', data);
-          unlock(); sfx.start();
           connect(data);
         } catch (err) {
           toast('Не удалось создать игру: ' + err.message, 'error');
@@ -230,7 +226,6 @@ function renderConnect() {
           h('span', { class: 'chip' }, `${state.duration_min} минут`),
           h('span', { class: 'chip' }, state.mode === 'september' ? 'Праздничный режим' : 'Обычный режим')),
         primaryButton('НАЧАТЬ ИГРУ', () => {
-          unlock(); startMusic(); sfx.start();
           net.send({ t: 'teacher', action: 'start' });
         }, { disabled: state.online === 0, class: 't-start', id: 't-start' }),
         state.online === 0 ? h('p', { class: 'hint' }, 'Ждём первых игроков…') : null,
@@ -243,6 +238,62 @@ function renderConnect() {
 }
 
 // --- ведение игры ---------------------------------------------------------
+
+/** То же, что видят ученики: варианты, карточки, буквы, промежутки.
+ *  Раньше на проекторе оставалась одна формулировка, и класс, у которого
+ *  задание уже на телефонах, не понимал, о чём речь. Ключ не показываем —
+ *  он остаётся под кнопкой «Показать ответ». */
+function teacherBody(q, answer) {
+  const right = (i) => answer && (answer.correct_index === i ||
+    (Array.isArray(answer.correct_index) && answer.correct_index.includes(i)));
+
+  if (q.answers) {
+    return h('div', { class: 'teacherq__answers' },
+      q.answers.map((a, i) => h('div', {
+        class: `teacherq__answer ${right(i) ? 'is-right' : ''}`,
+      }, `${'АБВГДЕ'[i] || i + 1}. ${a}`)));
+  }
+
+  if (q.type === 'sort' && q.items) {
+    return h('ol', { class: 'tq-list' },
+      q.items.map((it, i) => h('li', { class: 'tq-list__row' },
+        h('span', { class: 'tq-list__num' }, i + 1),
+        h('span', null, it))));
+  }
+
+  if (q.type === 'match' && q.left) {
+    return h('div', { class: 'tq-match' },
+      h('div', { class: 'tq-match__col' },
+        q.left.map((t, i) => h('div', { class: 'tq-match__item' }, `${i + 1}. ${t}`))),
+      h('div', { class: 'tq-match__col' },
+        (q.right || []).map((t, i) => h('div', { class: 'tq-match__item' },
+          `${'АБВГДЕ'[i] || i + 1}. ${t}`))));
+  }
+
+  if (q.type === 'punctuation' && q.tokens) {
+    return h('div', { class: 'tq-punct' },
+      q.tokens.map((w, i) => [
+        h('span', { class: 'tq-punct__word' }, w),
+        i < q.tokens.length - 1 ? h('span', { class: 'tq-punct__gap' }, i + 1) : null,
+      ]));
+  }
+
+  if (q.type === 'highlight' && q.tokens) {
+    return h('div', { class: 'tq-tokens' },
+      q.tokens.map((w) => h('span', { class: 'tq-token' }, w)));
+  }
+
+  if (q.type === 'word_build' && q.letters) {
+    return h('div', { class: 'tq-tokens' },
+      q.letters.map((l) => h('span', { class: 'tq-token tq-token--letter' }, l)));
+  }
+
+  if (q.type === 'text_input') {
+    return h('div', { class: 'tq-input' }, q.placeholder || 'Ученики вводят ответ с телефона');
+  }
+
+  return null;
+}
 
 function renderLive() {
   const m = state.mission;
@@ -274,12 +325,7 @@ function renderLive() {
                 h('span', { class: 'chip' }, q.topic || '')),
               h('h1', { class: 'teacherq__question' }, q.question),
               q.text ? h('p', { class: 'teacherq__text' }, q.text) : null,
-              q.answers ? h('div', { class: 'teacherq__answers' },
-                q.answers.map((a, i) => h('div', {
-                  class: `teacherq__answer ${answer?.correct_index === i ||
-                    (Array.isArray(answer?.correct_index) && answer.correct_index.includes(i))
-                    ? 'is-right' : ''}`,
-                }, `${'АБВГДЕ'[i]}. ${a}`))) : null,
+              teacherBody(q, answer),
               state.paused ? h('div', { class: 'teacherq__paused' }, '⏸ ПАУЗА — время остановлено') : null,
               answer ? h('div', { class: 'teacherq__key' },
                 h('strong', null, 'Ответ: '), answer.correct_text || '—',
@@ -490,7 +536,6 @@ function downloadCsv() {
 }
 
 export function mountChrome() {
-  document.body.append(settingsButton());
   document.body.append(h('div', {
     class: 'netbanner', id: 'netbanner', hidden: true,
   }, '⚠ Связь потеряна. Переподключаемся…'));

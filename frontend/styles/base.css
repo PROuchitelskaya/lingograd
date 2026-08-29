@@ -454,63 +454,7 @@ button, input { font: inherit; color: inherit; }
 
 /* настройки */
 
-.settings-wrap { position: fixed; right: 14px; bottom: 14px; z-index: 70; }
 
-.settings-fab {
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: var(--white);
-  box-shadow: var(--sh-2);
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.settings {
-  position: absolute;
-  right: 0;
-  bottom: 60px;
-  width: 240px;
-  background: var(--white);
-  border-radius: var(--r-lg);
-  box-shadow: var(--sh-3);
-  padding: 18px;
-}
-
-.settings__title { font-size: 12px; font-weight: 800; letter-spacing: .1em; color: var(--ink-55); margin-bottom: 12px; }
-.settings__row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; font-weight: 700; }
-.settings__hint { font-size: 12px; color: var(--ink-55); margin: 4px 0 0; }
-
-.switch {
-  position: relative;
-  width: 84px; height: 40px;
-  border-radius: var(--r-pill);
-  border: none;
-  background: var(--ink-12);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 10px;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--ink-55);
-  transition: background .22s;
-}
-
-.switch.is-on { background: var(--green-ink); color: var(--white); justify-content: flex-start; }
-
-.switch__knob {
-  position: absolute;
-  left: 4px;
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: var(--white);
-  box-shadow: var(--sh-1);
-  transition: transform .22s var(--ease);
-}
-
-.switch.is-on .switch__knob { transform: translateX(44px); }
 
 /* ------------------------------------------------------------- адаптивность */
 
@@ -527,10 +471,6 @@ button, input { font: inherit; color: inherit; }
   .hud__score { padding: 4px 14px; }
   .hud__team { display: none; }
   .btn--primary { width: 100%; }
-  .settings-wrap { right: 10px; bottom: 10px; }
-  /* задание занимает ровно экран, и шестерёнка накрыла бы последний вариант;
-     между заданиями — на разборе, карте, в лобби — она на месте */
-  #app[data-screen="question"] ~ .settings-wrap { display: none; }
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {

@@ -2,7 +2,6 @@
 // без hover-механики: 70% игроков сидят в телефоне (ТЗ §31).
 
 import { h, letterOf, mount } from './ui.js';
-import { sfx } from './audio.js';
 import { keeper } from './art.js';
 
 /** Сколько карточка не принимает нажатия после появления (мс). */
@@ -78,7 +77,6 @@ export function buildQuestion(q, { onSubmit }) {
       class: 'answer', type: 'button', dataset: { index: i },
       onClick: (e) => {
         if (locked || tooEarly()) return;
-        sfx.select();
         body.querySelectorAll('.answer').forEach((c) => c.classList.remove('is-picked'));
         e.currentTarget.classList.add('is-picked');
         setPayload(i, { instant: true });
@@ -100,7 +98,6 @@ export function buildQuestion(q, { onSubmit }) {
         class: `answer ${o.cls}`, type: 'button', dataset: { index: i },
         onClick: (e) => {
           if (locked || tooEarly()) return;
-          sfx.select();
           body.querySelectorAll('.answer').forEach((c) => c.classList.remove('is-picked'));
           e.currentTarget.classList.add('is-picked');
           setPayload(o.value, { instant: true });
@@ -119,7 +116,6 @@ export function buildQuestion(q, { onSubmit }) {
           class: 'answer answer--multi', type: 'button',
           onClick: (e) => {
             if (locked || tooEarly()) return;
-            sfx.select();
             picked.has(i) ? picked.delete(i) : picked.add(i);
             e.currentTarget.classList.toggle('is-picked', picked.has(i));
             setPayload([...picked]);
@@ -156,7 +152,6 @@ export function buildQuestion(q, { onSubmit }) {
       const next = pos + dir;
       if (next < 0 || next >= order.length) return;
       [order[pos], order[next]] = [order[next], order[pos]];
-      sfx.select();
       redraw();
     };
 
@@ -180,7 +175,6 @@ export function buildQuestion(q, { onSubmit }) {
           style: linked ? { borderColor: COLORS[i % COLORS.length] } : {},
           onClick: () => {
             if (locked || tooEarly()) return;
-            sfx.select();
             if (linked) delete links[i];
             activeLeft = activeLeft === i ? null : i;
             redraw();
@@ -200,7 +194,6 @@ export function buildQuestion(q, { onSubmit }) {
             if (locked || tooEarly()) return;
             if (owner !== undefined) { delete links[owner]; return redraw(); }
             if (activeLeft === null) return;
-            sfx.select();
             links[activeLeft] = j;
             activeLeft = null;
             redraw();
@@ -253,7 +246,6 @@ export function buildQuestion(q, { onSubmit }) {
             'aria-label': commas.has(i) ? 'Убрать запятую' : 'Поставить запятую',
             onClick: () => {
               if (locked || tooEarly()) return;
-              sfx.select();
               commas.has(i) ? commas.delete(i) : commas.add(i);
               redraw();
             },
@@ -282,14 +274,14 @@ export function buildQuestion(q, { onSubmit }) {
       mount(slots, used.length
         ? used.map((li, pos) => h('button', {
             class: 'tile tile--slot', type: 'button',
-            onClick: () => { if (locked || tooEarly()) return; used.splice(pos, 1); sfx.select(); redraw(); },
+            onClick: () => { if (locked || tooEarly()) return; used.splice(pos, 1); redraw(); },
           }, q.letters[li]))
         : h('span', { class: 'build__empty' }, 'Нажимайте на буквы'));
 
       mount(pool, q.letters.map((ch, i) => h('button', {
         class: `tile ${used.includes(i) ? 'is-used' : ''}`, type: 'button',
         disabled: used.includes(i) || locked,
-        onClick: () => { if (locked || tooEarly()) return; used.push(i); sfx.select(); redraw(); },
+        onClick: () => { if (locked || tooEarly()) return; used.push(i); redraw(); },
       }, ch)));
 
       setPayload(used.map((i) => q.letters[i]).join(''));
@@ -314,7 +306,6 @@ export function buildQuestion(q, { onSubmit }) {
         class: `token ${picked.has(i) ? 'is-picked' : ''}`, type: 'button',
         onClick: () => {
           if (locked || tooEarly()) return;
-          sfx.select();
           if (!multi) picked.clear();
           picked.has(i) ? picked.delete(i) : picked.add(i);
           redraw();
@@ -341,6 +332,15 @@ export function buildQuestion(q, { onSubmit }) {
     feedback,
     needsButton ? submitBtn : null,
   );
+
+  // Растушёвка нижнего края включается только когда список правда длиннее
+  // экрана: иначе у коротких заданий подтаивал бы последний вариант.
+  const markScrollable = () => {
+    body.dataset.scrollable = body.scrollHeight > body.clientHeight + 1 ? '1' : '0';
+  };
+  requestAnimationFrame(markScrollable);
+  setTimeout(markScrollable, 120);
+  window.addEventListener('resize', markScrollable);
 
   return {
     node,

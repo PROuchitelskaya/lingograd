@@ -4,12 +4,10 @@
 import { h, mount, mmss, swapScreen, primaryButton, ghostButton, toast,
          readLocal, saveLocal, players, crystals, plural, animateNumber } from './ui.js';
 import * as net from './net.js';
-import { sfx, setMood, startMusic, unlock } from './audio.js';
 import * as fx from './fx.js';
 import { cityScene, chaosVillain, chaosTower, bridge, schoolBell, crystal, cityMap,
          keeperBig } from './art.js';
 import { buildQuestion, revealBlock } from './question.js';
-import { settingsButton } from './settings.js';
 
 const root = document.getElementById('app');
 
@@ -83,18 +81,14 @@ function wireNet() {
     }
     activeQuestion.showResult(msg);
     if (msg.correct) {
-      sfx.correct();
       const counter = document.getElementById('hud-score');
       fx.crystalsTo(document.querySelector('.q-card'), counter, 6);
-      setTimeout(() => sfx.crystal(), 240);
     } else {
-      sfx.wrong();
     }
   });
   net.on('bell', () => {
     if (bellPlayed) return;
     bellPlayed = true;
-    sfx.bell();
     toast('Прозвенел звонок! Учитель может добавить время', 'warn');
   });
   net.on('welcome', (msg) => {
@@ -126,7 +120,7 @@ function showLanding() {
       h('p', { class: 'logo__sub' }, 'ЯЗЫК НА ГРАНИ'),
       h('p', { class: 'landing__lead' },
         'Город русского языка ждёт Хранителей. Соберите класс, выберите команду и верните Лингограду порядок до последнего звонка.'),
-      primaryButton('НАЧАТЬ ПРИКЛЮЧЕНИЕ →', () => { unlock(); sfx.start(); showJoin(); },
+      primaryButton('НАЧАТЬ ПРИКЛЮЧЕНИЕ →', () => showJoin(),
         { class: 'btn--breathe' }),
       h('div', { class: 'landing__links' },
         h('a', { class: 'link', href: '/teacher' }, 'Я учитель — создать игру'))),
@@ -148,7 +142,6 @@ function showJoin(prefill = '', error = '') {
   const go = () => {
     const code = codeInput.value.trim().toUpperCase();
     if (code.length < 4) return toast('Введите код из 4 символов', 'warn');
-    unlock();
     saveLocal('lg_player', { ...saved, code });
     // имя не спрашиваем и не отправляем: игрок получит прозвище от сервера
     net.connect({
@@ -334,8 +327,7 @@ function renderTeamPick() {
         class: 'teamcard', type: 'button',
         style: { '--team': t.color },
         onClick: () => {
-          unlock(); sfx.select();
-          net.send({ t: 'pick_team', team_id: t.id });
+                    net.send({ t: 'pick_team', team_id: t.id });
         },
       },
         h('span', { class: 'teamcard__emoji' }, t.emoji),
@@ -350,8 +342,6 @@ function renderTeamPick() {
 // --- эмоциональные экраны -------------------------------------------------
 
 function renderSeptember() {
-  sfx.bell();
-  startMusic();
   fx.leaves(true);
   fx.planes(3);
   setTimeout(() => fx.confettiBurst(window.innerWidth / 2, 160), 500);
@@ -367,8 +357,6 @@ function renderSeptember() {
 }
 
 function renderStory() {
-  sfx.chaos();
-  setMood('dark');
   fx.leaves(false);
   const lines = [
     'Ха-ха! С первым сентября, ученики!',
@@ -386,13 +374,10 @@ function renderStory() {
   swapScreen(root, node, 'story');
   lines.forEach((line, i) => setTimeout(() => {
     box.append(h('p', { class: 'story__line' }, line));
-    sfx.select();
   }, 900 + i * 1500));
 }
 
 function renderMap() {
-  sfx.transition();
-  setMood('bright');
   fx.leaves(true);
   const node = h('div', { class: 'screen screen--map' },
     hud(),
@@ -415,7 +400,6 @@ function renderMap() {
 }
 
 function renderMissionIntro() {
-  sfx.transition();
   const m = state.mission;
   const node = h('div', { class: `screen screen--intro ${m.zone}` },
     hud(),
@@ -430,7 +414,7 @@ function renderMissionIntro() {
         h('span', { class: 'chip' }, state.mission.district === 'tower' ? 'Финальная битва' : 'Работаем командой')),
       h('div', { class: 'phase-bar' }, h('span', { id: 'phase-bar' }))),
   );
-  if (m.district === 'tower') { setMood('dark'); fx.leaves(false); sfx.chaos(); }
+  if (m.district === 'tower') fx.leaves(false);
   swapScreen(root, node, 'intro');
 }
 
@@ -514,7 +498,6 @@ function renderReveal() {
       h('div', { class: 'phase-bar' }, h('span', { id: 'phase-bar' }))),
   );
   if (m.district === 'tower') {
-    sfx.hit();
     fx.letterBurst(window.innerWidth / 2, window.innerHeight / 3, 26);
     fx.flash('rgba(255,201,74,.35)');
   }
@@ -523,7 +506,6 @@ function renderReveal() {
 
 function renderMissionComplete() {
   const rep = state.mission_report || {};
-  sfx.transition();
   fx.confettiBurst(window.innerWidth / 2, window.innerHeight / 3, 60);
   const node = h('div', { class: `screen screen--done ${rep.zone || ''}` },
     hud(),
@@ -546,13 +528,9 @@ function renderMissionComplete() {
 }
 
 function renderVictory() {
-  sfx.boom();
-  setTimeout(() => sfx.victory(), 900);
-  setMood('bright');
   fx.letterBurst(window.innerWidth / 2, window.innerHeight / 2, 46);
   fx.confettiRain(5000);
   fx.leaves(true);
-  setTimeout(() => sfx.confetti(), 1200);
 
   const node = h('div', { class: 'screen screen--victory' },
     h('div', { class: 'victory__bell', html: schoolBell() }),
@@ -590,11 +568,9 @@ function renderResults() {
         h('span', { class: 'results__score' }, `${t.score}`));
       list.prepend(row);
       if (isWinner) {
-        sfx.victory();
         fx.confettiRain(4000);
         fx.confettiBurst(window.innerWidth / 2, window.innerHeight / 2, 110);
       } else {
-        sfx.select();
       }
     }, i * 1400 + (t.place === 1 ? 900 : 0));
   });
@@ -624,7 +600,6 @@ function renderAwards() {
 
 // Кнопка настроек и баннер связи живут поверх всех экранов.
 export function mountChrome() {
-  document.body.append(settingsButton());
   document.body.append(h('div', {
     class: 'netbanner', id: 'netbanner', hidden: true,
   }, '⚠ Связь потеряна. Переподключаемся — ваш прогресс сохранён'));
